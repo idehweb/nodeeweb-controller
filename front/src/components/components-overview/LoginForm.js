@@ -26,7 +26,9 @@ import {
   Logout,
   register,
   savePost,
-  setPassWithPhoneNumber
+  setPassWithPhoneNumber,
+  getSessionInfo,
+  checkDomainIsAvailable
 } from '#c/functions';
 import store from '#c/functions/store';
 import {fNum} from '#c/functions/utils';
@@ -49,6 +51,7 @@ class LoginForm extends Component {
     this.state = {
       captcha: false,
       phoneNumber: null,
+      sessionId: '',
       thePhoneNumber: null,
       activationCode: null,
       enterActivationCodeMode: false,
@@ -60,6 +63,7 @@ class LoginForm extends Component {
       countryCode: st.countryCode,
       getPassword: false,
       firstName: st.user.firstName,
+      webSite: st.user.webSite,
       lastName: st.user.lastName,
       passwordAuthentication: st?.themeData?.passwordAuthentication,
       registerExtraFields: st?.themeData?.registerExtraFields,
@@ -68,6 +72,7 @@ class LoginForm extends Component {
       internationalCode: st.user.internationalCode,
       email: '',
       goToProfile: false,
+      goToSiteBuilder: false,
       loginMethod: 'sms',
       token: st.user.token,
       CameFromPost: st.CameFromPost,
@@ -201,6 +206,16 @@ class LoginForm extends Component {
         // return;
       });
   };
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.setPassword !== this.state.setPassword) {
+      getSessionInfo().then((r)=>{
+        this.setState({
+          sessionId: r.sessionInfo.sessionID
+        })
+      })
+      console.log('Component Updated');
+    }
+  }
   handleForgotPass = (e) => {
     e.preventDefault();
     let fd = this.state.countryCode || '98';
@@ -259,11 +274,13 @@ class LoginForm extends Component {
       lastName,
       email,
       registerExtraFields,
+      webSite,
       password,
       extraFields,
       internationalCode,
       internationalCodeClass,
       address,
+      sessionId,
     } = this.state;
     const {t} = this.props;
     let addres = address;
@@ -272,6 +289,7 @@ class LoginForm extends Component {
     }
     let fd = countryCode || '98';
     console.log(firstName, !firstName);
+    console.log(webSite, !webSite);
     console.log(lastName, !lastName);
     console.log(password, !password);
     console.log(extraFields);
@@ -288,6 +306,12 @@ class LoginForm extends Component {
 
     if (!lastName || lastName == '') {
       console.log('lastName', lastName, !lastName);
+      toast(t('fill everything!'), {
+        type: 'error',
+      });
+      return;
+    }
+    if (!webSite || webSite == '') {
       toast(t('fill everything!'), {
         type: 'error',
       });
@@ -394,6 +418,7 @@ class LoginForm extends Component {
       phoneNumber: fd + phoneNumber,
       firstName,
       lastName,
+      webSite,
       address:addres,
       email,
       data: extraFields,
@@ -401,29 +426,38 @@ class LoginForm extends Component {
       password,
     });
     // return;
-    setPassWithPhoneNumber({
-      phoneNumber: fd + phoneNumber,
-      firstName,
-      lastName,
-      address:addres,
-      email,
-      data: extraFields,
-      internationalCode,
-      password,
-    }).then((res) => {
-      console.log(
-        'store.getState().store',
-        store.getState().store.user.token,
-        res
-      );
-      if (res.success || (res.firstName && res.lastName)) {
-        this.setState({
-          // token: res.token,
-          setPassword: false,
-          goToProfile: true,
-        });
-      }
-    });
+    if(webSite){
+      checkDomainIsAvailable({title: webSite, sessionId:sessionId}).then((r)=>{
+        if(r.success){
+          if(r.message.error){
+            toast.error(t('website already exist!'))
+          } else{
+            setPassWithPhoneNumber({
+              phoneNumber: fd + phoneNumber,
+              firstName,
+              lastName,
+              webSite,
+              address:addres,
+              email,
+              data: extraFields,
+              internationalCode,
+              password,
+            }).then((res) => {
+              console.log(' res after setpassword', res)
+              if (res.success || (res.customer.firstName && res.customer.lastName && res.customer.webSite)) {
+                this.setState({
+                  // token: res.token,
+                  setPassword: false,
+                  goToSiteBuilder: true,
+                  // goToProfile: true,
+                });
+              }
+            });
+          }
+        }
+      })
+    }
+
   };
 
   checkResponse(res) {
@@ -500,6 +534,8 @@ class LoginForm extends Component {
   componentDidMount() {
   }
 
+
+
   componentWillUnmount() {
     clearInterval(this.myInterval);
   }
@@ -522,6 +558,7 @@ class LoginForm extends Component {
     const {
       isDisplay,
       goToProfile,
+      goToSiteBuilder,
       token,
       firstName,
       lastName,
@@ -534,6 +571,7 @@ class LoginForm extends Component {
       enterActivationCodeMode,
       internationalCodeClass,
       goToCheckout,
+      webSite,
       goToChat,
       loginMethod,
       extraFields,
@@ -590,12 +628,14 @@ class LoginForm extends Component {
       this.fd(false);
       return <Navigate to="/add-new-post/publish"/>;
     } else if (
-      (token && !CameFromPost && !setPassword && firstName && lastName) ||
+      // (token && !CameFromPost && !setPassword && firstName && lastName) ||
       goToProfile
     ) {
       // window.location.replace('/my-posts');
       console.log('go to profile...', token, CameFromPost, setPassword);
       return <Navigate to="/profile"/>;
+    } else if (goToSiteBuilder){
+      return <Navigate to="/webSiteBuilder"/>
     }
     return (
       <ListGroup className={'login-register-form-inside'} flush>
@@ -818,6 +858,22 @@ class LoginForm extends Component {
                           dir="rtl"
                           onChange={(e) =>
                             this.setState({lastName: e.target.value})
+                          }
+                        />
+                      </InputGroup>
+                    </Col>
+                    <Col md="12" className="form-group">
+                      <label htmlFor="ollastname">{t('Your Website Name')}</label>
+
+                      <InputGroup className="mb-3">
+                        <FormInput
+                          placeholder={t('Website')}
+                          type="text"
+                          value={webSite}
+                          id="ollastname"
+                          dir="rtl"
+                          onChange={(e) =>
+                            this.setState({webSite: e.target.value})
                           }
                         />
                       </InputGroup>

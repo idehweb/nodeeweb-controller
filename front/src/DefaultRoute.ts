@@ -17,6 +17,7 @@ const Chat = lazy(() => import('@/views/Chat'));
 const Entities = lazy(() => import('@/views/Entities'));
 const Page = lazy(() => import('@/views/Page'));
 const Profile = lazy(() => import('@/views/Profile'));
+const webSiteBuilder = lazy(() => import('@/views/webSiteBuilder'));
 const MyOrders = lazy(() => import('@/views/MyOrders'));
 const Transaction = lazy(() => import('@/views/Transaction'));
 const DynamicPage = lazy(() => import('@/views/DynamicPage'));
@@ -127,6 +128,12 @@ const DefaultRoute = [
   {
     path: '/profile',
     element: Profile,
+    layout: DefaultLayout,
+    exact: true,
+  },
+  {
+    path: '/webSiteBuilder',
+    element: webSiteBuilder,
     layout: DefaultLayout,
     exact: true,
   },

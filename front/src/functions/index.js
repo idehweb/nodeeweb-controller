@@ -2070,6 +2070,43 @@ export const getOrder = (obj) => {
       });
   });
 };
+export const getSessionInfo = () => {
+  return new Promise(function (resolve, reject) {
+    getData(`${ApiUrl}/customer/getSession`, {}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        // let mainS = mainD.sessionInfo;
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const checkDomainIsAvailable = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/domainIsExist`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const generateSubdomain = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/createSubDomain`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 export const sendSms = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/sms`, obj, true)

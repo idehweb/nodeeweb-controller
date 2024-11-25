@@ -5,11 +5,11 @@
 
 //local development
 
-// window.BASE_URL = 'http://localhost:3002';
-// window.ADMIN_URL = 'http://localhost:3002';
-// window.ADMIN_ROUTE = 'http://localhost:3002/admin';
-// window.SHOP_URL = 'http://localhost:3002/';
-// window.THEME_URL = 'http://localhost:3002/theme';
+window.BASE_URL = 'http://localhost:3001';
+window.ADMIN_URL = 'http://localhost:3001';
+window.ADMIN_ROUTE = 'http://localhost:3001/admin';
+window.SHOP_URL = 'http://localhost:3001/';
+window.THEME_URL = 'http://localhost:3001/theme';
 
 //production
 
@@ -33,11 +33,11 @@
 // window.SHOP_URL = 'https://mahsaaz.idehweb.ir/';
 // window.THEME_URL = 'https://mahsaaz.idehweb.ir/theme';
 
-window.BASE_URL = 'https://asakala.shop';
-window.ADMIN_URL = 'https://asakala.shop';
-window.ADMIN_ROUTE = 'https://asakala.shop/admin';
-window.SHOP_URL = 'https://asakala.shop/';
-window.THEME_URL = 'https://asakala.shop/theme';
+// window.BASE_URL = 'https://asakala.shop';
+// window.ADMIN_URL = 'https://asakala.shop';
+// window.ADMIN_ROUTE = 'https://asakala.shop/admin';
+// window.SHOP_URL = 'https://asakala.shop/';
+// window.THEME_URL = 'https://asakala.shop/theme';
 
 
 // window.BASE_URL = 'https://titipluse.com';

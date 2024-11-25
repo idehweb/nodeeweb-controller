@@ -509,7 +509,7 @@ export default function Menu({ onMenuClick, dense = false }) {
           {/*leftIcon={<RSList.Automation.icon />}*/}
           {/*dense={dense}*/}
         {/*/>*/}
-        {ModelList.map((i, idx) => {
+        {/* {ModelList.map((i, idx) => {
           const modelName = i.toLowerCase();
           if (!ExcludeList.includes(modelName))
             return (
@@ -524,7 +524,7 @@ export default function Menu({ onMenuClick, dense = false }) {
             );
 
           return null;
-        })}
+        })} */}
       </SubMenu>
       </>
     )}

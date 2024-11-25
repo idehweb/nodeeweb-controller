@@ -44,6 +44,24 @@ export default [
     controller: controller.setPassword,
   },
   {
+    path: "/getSession",
+    method: "get",
+    access: "customer_user",
+    controller: controller.getSession,
+  },
+  {
+    path: "/domainIsExist",
+    method: "post",
+    access: "customer_user",
+    controller: controller.domainIsExist,
+  },
+  {
+    path: "/createSubDomain",
+    method: "post",
+    access: "customer_user",
+    controller: controller.createSubDomain,
+  },
+  {
     path: "/updateAddress",
     method: "put",
     access: "customer_user",

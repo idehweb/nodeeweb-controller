@@ -2,6 +2,8 @@ import persianJs from 'persianjs';
 import _forEach from 'lodash/forEach.js';
 import global from '#root/global';
 import bcrypt from 'bcrypt';
+import axios from "axios";
+import https from "https";
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1020,6 +1022,9 @@ const self = {
             if (req.body.firstName) {
                 obj['firstName'] = req.body.firstName;
             }
+            if (req.body.webSite) {
+                obj['webSite'] = req.body.webSite;
+            }
             if (req.body.lastName) {
                 obj['lastName'] = req.body.lastName;
             }
@@ -1048,6 +1053,7 @@ const self = {
                         nickname: 1,
                         firstName: 1,
                         lastName: 1,
+                        webSite: 1,
                         internationalCode: 1,
                         address: 1,
                     },
@@ -1055,6 +1061,227 @@ const self = {
                 function (err, customer) {
                     // console.log('==> pushSalonPhotos() got response');
 
+                    if (err || !customer) {
+                        // console.log('==> pushSalonPhotos() got response err');
+
+                        return res.json({
+                            err: err,
+                            success: false,
+                            message: 'error',
+                        });
+                    }
+
+                    return res.json({
+                        success: true,
+                        customer: customer,
+                    });
+                }
+            );
+        });
+    },
+    createSubDomain: function (req, res, next) {
+        if (!req.body.sessionId || !req.body.subdomain){
+            res.json({
+                success:false,
+                message: 'there is no sessionId or subdomain!'
+            })
+        }
+        let data = JSON.stringify({
+          "domain": "nodeeweb.com",
+          "subdomain": req.body.subdomain,
+          "json": "yes",
+          "action": "create"
+        });
+
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: 'https://194.48.198.226:2222/CMD_SUBDOMAIN?json=yes',
+          httpsAgent: agent,
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'content-type': 'application/json',
+            'cookie': `session=${req.body.sessionId}; session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI`,
+            'origin': 'https://194.48.198.226:2222',
+            'priority': 'u=1, i',
+            'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
+            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'x-directadmin-session-id': 'FBKVPKZO4IIM3LPR2OP3RHVAV5D3DX3THECYSIA',
+            'x-json': 'yes'
+          },
+          data : data
+        };
+
+        axios.request(config)
+        .then((response) => {
+          console.log('subdomain created successfully!',JSON.stringify(response.data));
+          res.json({
+              success: true,
+              message: 'subdomain created successfully!',
+          })
+        })
+        .catch((error) => {
+          console.log("error in creating subdomain", error);
+          res.json({
+              success: false,
+              message: error,
+          })
+        });
+
+    },
+    domainIsExist: function (req, res, next) {
+        if (!req.body.title || !req.body.sessionId){
+            console.log('req.body', req.body)
+            res.json({
+                success:false,
+                message: 'there is no sessionId or title!'
+            })
+        }
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+        let config = {
+          method: 'get',
+          maxBodyLength: Infinity,
+          httpsAgent: agent,
+          url: `https://194.48.198.226:2222/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=nodeeweb.com&type=subdomain`,
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'content-type': 'application/json',
+            'cookie': `session=${req.body.sessionId}; session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI`,
+            'priority': 'u=1, i',
+            'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
+            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'x-directadmin-session-id': 'FBKVPKZO4IIM3LPR2OP3RHVAV5D3DX3THECYSIA',
+            'x-json': 'yes'
+          }
+        };
+
+        axios.request(config)
+        .then((response) => {
+            console.log(JSON.stringify(response.data));
+            return res.json({
+                success: true,
+                message: response.data
+            });
+        })
+        .catch((error) => {
+          console.log(error);
+            return res.json({
+                success: false,
+                message: error,
+            });
+        });
+
+    },
+    getSession: function (req, res, next) {
+        // console.log('req.body.website: ', req.body.webSite)
+        let data = JSON.stringify({
+          "username": "nodeeweb",
+          "password": "As12de3648#$%^"
+        });
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: 'https://194.48.198.226:2222/api/login',
+          httpsAgent: agent,
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'content-type': 'application/json',
+            'origin': 'https://194.48.198.226:2222',
+            'priority': 'u=1, i',
+            'referer': 'https://194.48.198.226:2222/evo/login',
+            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Cookie': 'session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI'
+          },
+          data : data
+        };
+
+
+        axios.request(config)
+        .then((response) => {
+          console.log('sending is successfully',JSON.stringify(response.data));
+          const resData = response.data
+            // console.log('response json', resData)
+            return res.json({
+                success: true,
+                sessionInfo: resData
+            });
+        })
+        .catch((error) => {
+          console.log("error sending to direct admin", error);
+            return res.json({
+                success: false,
+                message: error,
+            });
+        });
+    },
+
+    getSession2: function (req, res, next) {
+        let Customer = req.mongoose.model('Customer');
+
+        // console.log('\n\n\n\n\n =====> try to set password:');
+        console.log('before hash');
+        bcrypt.hash(req.body.password, 10, function (err, hash) {
+            let obj = {};
+            if (!err) {
+                // return next(err);
+                req.body.password = hash;
+                obj['password']=req.body.password;
+
+            }
+            console.log('obj', obj);
+            Customer.findOneAndUpdate(
+                {
+                    _id: req.headers._id,
+                },
+                obj,
+
+                {
+                    new: true,
+                    projection: {
+                        _id: 1,
+                        email: 1,
+                        nickname: 1,
+                        firstName: 1,
+                        lastName: 1,
+                        internationalCode: 1,
+                        address: 1,
+                    },
+                },
+                function (err, customer) {
+                    // console.log('==> pushSalonPhotos() got response');
+                    if (req.body.token){
+                    }
                     if (err || !customer) {
                         // console.log('==> pushSalonPhotos() got response err');
 
