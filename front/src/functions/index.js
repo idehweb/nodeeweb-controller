@@ -2901,6 +2901,7 @@ export const active = (req) => {
           address,
           firstName,
           lastName,
+          webSite,
           invitation_code,
           internationalCode,
           _id,
@@ -2910,6 +2911,7 @@ export const active = (req) => {
           ...{
             token: token,
             address: address,
+            webSite: webSite,
             firstName: firstName,
             lastName: lastName,
             invitation_code: invitation_code,

@@ -487,8 +487,7 @@ class LoginForm extends Component {
       // if (res.firstName && res.lastName) {
       if (res.success) {
         toast.success(t('welcome'));
-        // window.location.href = '/';
-        // return;
+
       }
       console.log("res.shallWeSetPass", res.shallWeSetPass)
       console.log("res.shallWeSetPass", res.token)
@@ -518,10 +517,12 @@ class LoginForm extends Component {
           });
 
         } else {
+          console.log('customer was in db before')
           this.setState({
             token: res?.token,
             enterActivationCodeMode: false,
             setPassword: false,
+            goToProfile: true,
             firstName: res?.firstName,
             lastName: res?.lastName
           });

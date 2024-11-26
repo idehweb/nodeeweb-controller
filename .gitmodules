@@ -1,0 +1,3 @@
+[submodule "source/nodeeweb3"]
+	path = source/nodeeweb3
+	url = https://github.com/idehweb/nodeeweb3.git

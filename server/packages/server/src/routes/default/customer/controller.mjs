@@ -731,7 +731,7 @@ const self = {
 
             Customer.findOne(
                 {phoneNumber: req.body.phoneNumber},
-                '_id activationCode internationalCode address firstName lastName invitation_code',
+                '_id activationCode internationalCode webSite address firstName lastName invitation_code',
                 function (err, user) {
                     if (err) return next(err);
                     // console.log('user is:', user);
@@ -782,6 +782,7 @@ const self = {
                                         success: true,
                                         token: Token,
                                         address: user.address,
+                                        webSite: user.webSite,
                                         firstName: user.firstName,
                                         lastName: user.lastName,
                                         internationalCode: user.internationalCode,
