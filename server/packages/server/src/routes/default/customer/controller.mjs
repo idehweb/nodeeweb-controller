@@ -403,7 +403,7 @@ const self = {
         if (req.headers._id)
             Customer.findById(
                 req.headers._id,
-                '_id email nickname firstName lastName data phoneNumber internationalCode address',
+                '_id email nickname webSite firstName lastName data phoneNumber internationalCode address',
                 function (err, customer) {
                     if (err || !customer) {
                         // console.log('==> pushSalonPhotos() got response err');
