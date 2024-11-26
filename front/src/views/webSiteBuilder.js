@@ -35,9 +35,14 @@ export default function webSiteBuilder() {
                         getSource(user.webSite).then((res2) => {
                             console.log('res2', res2)
                             if(res2.success){
+                                toast.success(t('Contents added to Websites!'));
                                 yarnInstall(user.webSite).then((res3)=> {
                                     if(res3.success){
+                                        toast.success(t('Packages installed!'));
                                         addEnvLocal(user.webSite).then((res4)=>{
+                                            if(res4.success){
+                                                toast.success(t('setup is done!'));
+                                            }
                                             // if(res4){
                                             //     addMongoDb(user.website).then((res5) => {
 

@@ -1168,10 +1168,10 @@ const self = {
             return;
         }
 
-        // const command = `cp -r ${sourcePath} ${destinationPath}`;
+        const command = `cp -r ${sourcePath} ${destinationPath}`;
 
         // command for windows
-        const command = `xcopy ${sourcePath} ${destinationPath} /E /H /C /I`;
+        // const command = `xcopy ${sourcePath} ${destinationPath} /E /H /C /I`;
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -1222,14 +1222,14 @@ const self = {
             if (error) {
                 console.error(`Error: ${error.message}`);
                 return res.json({
-                    success: true,
+                    success: false,
                     message: error.message
                 });
             }
             if (stderr) {
                 console.error(`Stderr: ${stderr}`);
                 return res.json({
-                    success:false,
+                    success:true,
                     message: stderr
                 });
             }
