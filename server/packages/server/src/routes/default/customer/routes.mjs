@@ -46,8 +46,14 @@ export default [
   {
     path: "/getSession",
     method: "get",
-    access: "customer_user",
+    access: "customer_all",
     controller: controller.getSession,
+  },
+  {
+    path: "/getSource",
+    method: "post",
+    access: "customer_all",
+    controller: controller.getSource,
   },
   {
     path: "/domainIsExist",

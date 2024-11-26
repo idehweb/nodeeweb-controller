@@ -2,7 +2,7 @@ import { useState , useEffect} from 'react';
 import { Col, Container, Nav, NavItem, NavLink, Row } from 'shards-react';
 import { useLocation } from 'react-router-dom';
 import store from '#c/functions/store';
-import { getSessionInfo, generateSubdomain} from '#c/functions'
+import { getSessionInfo, generateSubdomain, getSource} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
 import { useTranslation } from 'react-i18next';
 import {Navigate} from 'react-router-dom';
@@ -32,6 +32,9 @@ export default function webSiteBuilder() {
                 }
                 generateSubdomain(obj).then((r)=>{
                     if (r.success){
+                        getSource(user.webSite).then((res2) => {
+                            console.log('res2', res2)
+                        })
                         setLoader(false)
                         setResMessage(r.message)
                         toast.success(t('your website created!'));
@@ -57,9 +60,9 @@ export default function webSiteBuilder() {
     const location = useLocation();
     let { hash = 'profile' } = location;
     const [tab, setTab] = useState(() => hash.replace('#', '') || 'profile');
-    if(goToProfile){
-        return <Navigate to={'/profile'} />;
-    }
+    // if(goToProfile){
+    //     return <Navigate to={'/profile'} />;
+    // }
     return (
     <Container fluid className="main-content-container px-4 py-5">
         {loader && <>{loader2}</>}

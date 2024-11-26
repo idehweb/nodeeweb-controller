@@ -207,14 +207,6 @@ class LoginForm extends Component {
       });
   };
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.setPassword !== this.state.setPassword) {
-      getSessionInfo().then((r)=>{
-        this.setState({
-          sessionId: r.sessionInfo.sessionID
-        })
-      })
-      console.log('Component Updated');
-    }
   }
   handleForgotPass = (e) => {
     e.preventDefault();
@@ -533,6 +525,12 @@ class LoginForm extends Component {
   };
 
   componentDidMount() {
+    getSessionInfo().then((r)=>{
+      this.setState({
+        sessionId: r.sessionInfo.sessionID
+      })
+    })
+    console.log('Component mounted');
   }
 
 

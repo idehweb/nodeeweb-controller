@@ -3,7 +3,10 @@ import _forEach from 'lodash/forEach.js';
 import global from '#root/global';
 import bcrypt from 'bcrypt';
 import axios from "axios";
+import {exec} from "child_process";
 import https from "https";
+import path from "path";
+import fs from 'fs'
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1138,6 +1141,48 @@ const self = {
               success: false,
               message: error,
           })
+        });
+
+    },
+    getSource: function (req, res, next) {
+        if (!req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no domain title!'
+            })
+        }
+        const __dirname = path.resolve();
+        // Assuming `req.body.title` is coming from an Express.js request
+        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+        const sourcePath = path.resolve(__dirname, '../source/nodeeweb3/*');
+        const destinationPath = path.resolve(__dirname, `../../domains/${title}.nodeeweb.com/public_html/`);
+
+        if (!fs.existsSync(destinationPath)) {
+            res.status(404).send("Website doesn't exist.");
+            return;
+        }
+
+        const command = `cp -r ${sourcePath} ${destinationPath}`;
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error: ${error.message}`);
+                return res.json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return res.json({
+                    success:false,
+                    message: stderr
+                });
+            }
+            return res.json({
+                success: true,
+                message: 'The content of the Website was taken'
+            });
         });
 
     },
