@@ -1240,9 +1240,10 @@ const self = {
     },
     getSession: function (req, res, next) {
         // console.log('req.body.website: ', req.body.webSite)
+        console.log('sdfdsasdasdfadfs')
         let data = JSON.stringify({
-          "username": "nodeeweb",
-          "password": "As12de3648#$%^"
+          "username": process.env.DIRECT_ADMIN_USERNAME,
+          "password": process.env.DIRECT_ADMIN_PASSWORD
         });
         const agent = new https.Agent({
           rejectUnauthorized: false,
