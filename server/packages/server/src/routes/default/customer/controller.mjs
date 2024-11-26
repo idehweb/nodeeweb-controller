@@ -1154,15 +1154,24 @@ const self = {
         const __dirname = path.resolve();
         // Assuming `req.body.title` is coming from an Express.js request
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
-        const sourcePath = path.resolve(__dirname, '../source/nodeeweb3/*');
-        const destinationPath = path.resolve(__dirname, `../../domains/${title}.nodeeweb.com/public_html/`);
+        const sourcePath = path.resolve(__dirname, '../source/*');
+        const destinationPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/`);
 
+        // testing paths in local
+        // const sourcePath = path.resolve(__dirname, '../source/');
+        // const destinationPath = path.resolve(__dirname, `tmpp`);
+
+        console.log(sourcePath, destinationPath)
         if (!fs.existsSync(destinationPath)) {
+            console.log('destinationPath: ', destinationPath)
             res.status(404).send("Website doesn't exist.");
             return;
         }
 
-        const command = `cp -r ${sourcePath} ${destinationPath}`;
+        // const command = `cp -r ${sourcePath} ${destinationPath}`;
+
+        // command for windows
+        const command = `xcopy ${sourcePath} ${destinationPath} /E /H /C /I`;
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -1182,6 +1191,99 @@ const self = {
             return res.json({
                 success: true,
                 message: 'The content of the Website was taken'
+            });
+        });
+
+    },
+    yarnInstall: function (req, res, next) {
+        if (!req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no domain title!'
+            })
+        }
+        const __dirname = path.resolve();
+        // Assuming `req.body.title` is coming from an Express.js request
+        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+
+        // testing paths in local
+        // const targetPath = path.resolve(__dirname, `tmpp/server/`);
+
+        if (!fs.existsSync(targetPath)) {
+            console.log('destinationPath: ', targetPath)
+            res.status(404).send("Website doesn't exist.");
+            return;
+        }
+
+        const command = `cd ${targetPath} && yarn install`;
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error: ${error.message}`);
+                return res.json({
+                    success: true,
+                    message: error.message
+                });
+            }
+            if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return res.json({
+                    success:false,
+                    message: stderr
+                });
+            }
+            return res.json({
+                success: true,
+                message: 'packages installed'
+            });
+        });
+
+    },
+    addEnvLocal: function (req, res, next) {
+        if (!req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no domain title!'
+            })
+        }
+        const __dirname = path.resolve();
+        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+
+        // testing paths in local
+        // const targetPath = path.resolve(__dirname, `tmpp/server/`);
+
+        if (!fs.existsSync(targetPath)) {
+            console.log('destinationPath: ', targetPath)
+            res.status(404).send("Website doesn't exist.");
+            return;
+        }
+
+        const command = `cd ${targetPath} && touch .env.local && cp .env .env.local && cat .env.local`;
+
+        // for windows
+        // const command = `cd ${targetPath} && type nul > .env.local && copy .env .env.local && type .env.local`;
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error: ${error.message}`);
+                return res.json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return res.json({
+                    success:false,
+                    message: stderr
+                });
+            }
+            console.log('env.local : ', stdout )
+            return res.json({
+                success: true,
+                message: '.env.local added'
             });
         });
 

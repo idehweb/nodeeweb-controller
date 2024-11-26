@@ -2,7 +2,7 @@ import { useState , useEffect} from 'react';
 import { Col, Container, Nav, NavItem, NavLink, Row } from 'shards-react';
 import { useLocation } from 'react-router-dom';
 import store from '#c/functions/store';
-import { getSessionInfo, generateSubdomain, getSource} from '#c/functions'
+import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
 import { useTranslation } from 'react-i18next';
 import {Navigate} from 'react-router-dom';
@@ -34,6 +34,19 @@ export default function webSiteBuilder() {
                     if (r.success){
                         getSource(user.webSite).then((res2) => {
                             console.log('res2', res2)
+                            if(res2.success){
+                                yarnInstall(user.webSite).then((res3)=> {
+                                    if(res3.success){
+                                        addEnvLocal(user.webSite).then((res4)=>{
+                                            // if(res4){
+                                            //     addMongoDb(user.website).then((res5) => {
+
+                                                // })
+                                            // }
+                                        })
+                                    }
+                                })   
+                            }
                         })
                         setLoader(false)
                         setResMessage(r.message)

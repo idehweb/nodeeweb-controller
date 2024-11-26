@@ -2119,6 +2119,30 @@ export const getSource = (title) => {
       });
   });
 };
+export const yarnInstall = (title) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/yarnInstall`, {title}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const addEnvLocal = (title) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/addEnvLocal`, {title}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 export const sendSms = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/sms`, obj, true)

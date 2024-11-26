@@ -56,6 +56,18 @@ export default [
     controller: controller.getSource,
   },
   {
+    path: "/yarnInstall",
+    method: "post",
+    access: "customer_all",
+    controller: controller.yarnInstall,
+  },
+  {
+    path: "/addEnvLocal",
+    method: "post",
+    access: "customer_all",
+    controller: controller.addEnvLocal,
+  },
+  {
     path: "/domainIsExist",
     method: "post",
     access: "customer_user",
