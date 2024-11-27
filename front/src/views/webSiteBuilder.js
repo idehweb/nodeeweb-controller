@@ -2,7 +2,7 @@ import { useState , useEffect} from 'react';
 import { Col, Container, Nav, NavItem, NavLink, Row } from 'shards-react';
 import { useLocation } from 'react-router-dom';
 import store from '#c/functions/store';
-import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal} from '#c/functions'
+import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal, addMongoDb} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
 import { useTranslation } from 'react-i18next';
 import {Navigate} from 'react-router-dom';
@@ -42,12 +42,14 @@ export default function webSiteBuilder() {
                                         addEnvLocal(user.webSite).then((res4)=>{
                                             if(res4.success){
                                                 toast.success(t('setup is done!'));
+                                                console.log('add env local')
+                                                addMongoDb(user.webSite).then((r5) => {
+                                                    if (r5.success){
+                                                        setGoToProfile(true)
+                                                        toast.success(t('your website created!'));
+                                                    }
+                                                })
                                             }
-                                            // if(res4){
-                                            //     addMongoDb(user.website).then((res5) => {
-
-                                                // })
-                                            // }
                                         })
                                     }
                                 })   
@@ -55,8 +57,7 @@ export default function webSiteBuilder() {
                         })
                         setLoader(false)
                         setResMessage(r.message)
-                        toast.success(t('your website created!'));
-                        setGoToProfile(true)
+                        toast.success(t('domain of your website created!'));
                     } else {
                         setLoader(false)
                         setResMessage(r.message.message)
@@ -78,9 +79,9 @@ export default function webSiteBuilder() {
     const location = useLocation();
     let { hash = 'profile' } = location;
     const [tab, setTab] = useState(() => hash.replace('#', '') || 'profile');
-    // if(goToProfile){
-    //     return <Navigate to={'/profile'} />;
-    // }
+    if(goToProfile){
+        return <Navigate to={'/profile'} />;
+    }
     return (
     <Container fluid className="main-content-container px-4 py-5">
         {loader && <>{loader2}</>}

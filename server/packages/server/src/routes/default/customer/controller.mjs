@@ -6,7 +6,8 @@ import axios from "axios";
 import {exec} from "child_process";
 import https from "https";
 import path from "path";
-import fs from 'fs'
+import fs from 'fs';
+import crypto from 'crypto';
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1262,7 +1263,7 @@ const self = {
 
         const command = `cd ${targetPath} && touch .env.local && cp .env .env.local && cat .env.local`;
 
-        // for windows
+        // testing for windows
         // const command = `cd ${targetPath} && type nul > .env.local && copy .env .env.local && type .env.local`;
 
         exec(command, (error, stdout, stderr) => {
@@ -1284,6 +1285,43 @@ const self = {
             return res.json({
                 success: true,
                 message: '.env.local added'
+            });
+        });
+
+    },
+    addMongoDb: function (req, res, next) {
+        if (!req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no domain title!'
+            })
+        }
+        const __dirname = path.resolve();
+        const generatedPassword = crypto.randomBytes(16).toString('base64').slice(0, 24);
+        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+
+        const mongoCommand = `cd ${__dirname} && mongo -u admin -p lLqX243d17mq9O9Yg5am6cO35s24 --port 2758 --eval "db = db.getSiblingDB('${title}'); db.createUser({user: '${title}', 
+            pwd: '${generatedPassword}', roles: [{role: 'dbOwner', db: '${title}'}]});"`;
+        console.log("mongoCommand: ", mongoCommand)
+        exec(mongoCommand, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error: ${error.message}`);
+                return res.json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return res.json({
+                    success:false,
+                    message: stderr
+                });
+            }
+            console.log('mongo out : ', stdout )
+            return res.json({
+                success: true,
+                message: 'mongodb added'
             });
         });
 

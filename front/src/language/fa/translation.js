@@ -408,6 +408,7 @@ export default () => ({
   'your website created!': 'سایت شما ساخته شد',
   'website already exist!': 'این سایت از قبل وجود دارد',
   'Contents added to Websites!': 'محتوا به سایتتان اضافه شد',
+  'domain of your website created!': 'دامنه سایت شما ساخته شد',
   'Packages installed!': 'پکیج ها نصب شد',
   'setup is done!': 'تنظیمات سایت انجام شد',
   'Website': 'وبسایت',
