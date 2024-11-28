@@ -1171,7 +1171,7 @@ const self = {
 
         const command = `cp -r ${sourcePath} ${destinationPath}`;
 
-        // command for windows
+        // Testing command for windows
         // const command = `xcopy ${sourcePath} ${destinationPath} /E /H /C /I`;
 
         exec(command, (error, stdout, stderr) => {
@@ -1300,6 +1300,7 @@ const self = {
         const generatedPassword = crypto.randomBytes(16).toString('base64').slice(0, 24);
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
 
+
         const mongoCommand = `cd ${__dirname} && mongo -u admin -p lLqX243d17mq9O9Yg5am6cO35s24 --port 2758 --eval "db = db.getSiblingDB('${title}'); db.createUser({user: '${title}', 
             pwd: '${generatedPassword}', roles: [{role: 'dbOwner', db: '${title}'}]});"`;
         console.log("mongoCommand: ", mongoCommand)
@@ -1321,10 +1322,104 @@ const self = {
             console.log('mongo out : ', stdout )
             return res.json({
                 success: true,
-                message: 'mongodb added'
+                message: 'mongodb added',
+                dbPassword: generatedPassword
             });
         });
 
+    },
+    changeEnvLocal: function (req, res, next) {
+        const title = req.body.title;
+
+        if (!title || !req.body.dbPassword) {
+            return res.json({
+                success: false,
+                message: 'There is no domain title or dbPassword!'
+            });
+        }
+
+        const __dirname = path.resolve();
+
+        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+
+        // testing for windows
+        // const targetPath = path.resolve(__dirname, `tmpp/server/`);
+
+        // Define the port range
+        const MIN_PORT = 3000;
+        const MAX_PORT = 3999;
+
+        // Function to check if a port is available
+        function checkPort(port) {
+            return new Promise((resolve, reject) => {
+                const command = `netstat -tuln | grep :${port}`;
+                exec(command, (error, stdout) => {
+                    if (error || !stdout) {
+                        // If there's no output, the port is available
+                        resolve(port);
+                    } else {
+                        // If the port is busy, resolve with null
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        // Function to find an available port
+        function findPort() {
+            return new Promise((resolve, reject) => {
+                const randomPort = Math.floor(Math.random() * (MAX_PORT - MIN_PORT + 1)) + MIN_PORT;
+                checkPort(randomPort).then((port) => {
+                    if (port) {
+                        resolve(port); // Return the available port
+                    } else {
+                        findPort().then(resolve); // Recursively try again
+                    }
+                });
+            });
+        }
+
+        // Find an available port
+        findPort().then((port) => {
+            const command = `
+                cd ${targetPath} && 
+                sed.exe -i "s|mongodbConnectionUrl=.*|mongodbConnectionUrl=\"mongodb://${title}:${req.body.dbPassword}@127.0.0.1:2758/?authSource=${title}\"|" ^
+                         -e "s|SERVER_PORT=.*|SERVER_PORT=8080|" ^
+                         -e "s|CLIENT_PORT=.*|SERVER_PORT=8080|" ^
+                         -e "s|dbName=.*|dbName=${title}|" ^
+                         -e "s|SITE_NAME=.*|SITE_NAME=${title}|" ^
+                         -e "s|BASE_URL=.*|BASE_URL=https://${title}.nodeeweb.com|" ^
+                         -e "s|SHOP_URL=.*|SHOP_URL=https://${title}.nodeeweb.com/|" ^
+                         -e "s|ADMIN_URL=.*|ADMIN_URL=https://${title}.nodeeweb.com/admin|" .env.local
+                         `;
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return res.json({
+                        success: false,
+                        message: error.message
+                    });
+                }
+                if (stderr) {
+                    console.error(`Stderr: ${stderr}`);
+                    return res.json({
+                        success: false,
+                        message: stderr
+                    });
+                }
+
+                return res.json({
+                    success: true,
+                    message: `.env.local configuration updated with port ${port}`
+                });
+            });
+        }).catch((err) => {
+            console.error('Error getting available port:', err);
+            return res.json({
+                success: false,
+                message: 'Error getting available port'
+            });
+        });
     },
     domainIsExist: function (req, res, next) {
         if (!req.body.title || !req.body.sessionId){

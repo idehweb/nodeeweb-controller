@@ -2,7 +2,7 @@ import { useState , useEffect} from 'react';
 import { Col, Container, Nav, NavItem, NavLink, Row } from 'shards-react';
 import { useLocation } from 'react-router-dom';
 import store from '#c/functions/store';
-import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal, addMongoDb} from '#c/functions'
+import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal, addMongoDb, changeEnvLocal} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
 import { useTranslation } from 'react-i18next';
 import {Navigate} from 'react-router-dom';
@@ -41,12 +41,17 @@ export default function webSiteBuilder() {
                                         toast.success(t('Packages installed!'));
                                         addEnvLocal(user.webSite).then((res4)=>{
                                             if(res4.success){
-                                                toast.success(t('setup is done!'));
-                                                console.log('add env local')
+                                                toast.success(t('env local is added!'));
                                                 addMongoDb(user.webSite).then((r5) => {
                                                     if (r5.success){
-                                                        setGoToProfile(true)
-                                                        toast.success(t('your website created!'));
+                                                        toast.success(t('db is added!'));
+                                                        changeEnvLocal({title: user.webSite, dbPassword: r5.dbPassword}).then((r6) => {
+                                                            if(r6.success){
+                                                                setGoToProfile(true)
+                                                                toast.success(t('setup is done!'));
+                                                                toast.success(t('your website created!'));
+                                                            }
+                                                        });
                                                     }
                                                 })
                                             }

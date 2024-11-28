@@ -68,6 +68,12 @@ export default [
     controller: controller.addEnvLocal,
   },
   {
+    path: "/changeEnvLocal",
+    method: "post",
+    access: "customer_all",
+    controller: controller.changeEnvLocal,
+  },
+  {
     path: "/addMongoDb",
     method: "post",
     access: "customer_all",

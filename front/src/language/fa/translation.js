@@ -411,6 +411,8 @@ export default () => ({
   'domain of your website created!': 'دامنه سایت شما ساخته شد',
   'Packages installed!': 'پکیج ها نصب شد',
   'setup is done!': 'تنظیمات سایت انجام شد',
+  'db is added!': 'دیتابیس ساخته شد',
+  'env local is added!': 'فایل تنظیمات اضافه شد',
   'Website': 'وبسایت',
   'Your email': 'ایمیل شما',
   'set new password': 'رمز عبور جدید',

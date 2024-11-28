@@ -2155,6 +2155,18 @@ export const addMongoDb = (title) => {
       });
   });
 };
+export const changeEnvLocal = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/changeEnvLocal`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 export const sendSms = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/sms`, obj, true)
