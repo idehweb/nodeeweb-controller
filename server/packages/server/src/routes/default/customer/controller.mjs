@@ -1297,7 +1297,16 @@ const self = {
             })
         }
         const __dirname = path.resolve();
-        const generatedPassword = crypto.randomBytes(16).toString('base64').slice(0, 24);
+        function generatePassword(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                const randomByte = crypto.randomBytes(1);
+                result += characters[randomByte[0] % characters.length];
+            }
+            return result;
+        }
+        const generatedPassword = generatePassword(30);
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
 
 
@@ -1381,17 +1390,17 @@ const self = {
 
         // Find an available port
         findPort().then((port) => {
-            const command = `
-                cd ${targetPath} && 
-                sed.exe -i "s|mongodbConnectionUrl=.*|mongodbConnectionUrl=\"mongodb://${title}:${req.body.dbPassword}@127.0.0.1:2758/?authSource=${title}\"|" ^
-                         -e "s|SERVER_PORT=.*|SERVER_PORT=8080|" ^
-                         -e "s|CLIENT_PORT=.*|SERVER_PORT=8080|" ^
-                         -e "s|dbName=.*|dbName=${title}|" ^
-                         -e "s|SITE_NAME=.*|SITE_NAME=${title}|" ^
-                         -e "s|BASE_URL=.*|BASE_URL=https://${title}.nodeeweb.com|" ^
-                         -e "s|SHOP_URL=.*|SHOP_URL=https://${title}.nodeeweb.com/|" ^
-                         -e "s|ADMIN_URL=.*|ADMIN_URL=https://${title}.nodeeweb.com/admin|" .env.local
-                         `;
+            const command = `cd ${targetPath} && sed -i \
+  -e "s|mongodbConnectionUrl=.*|mongodbConnectionUrl=\"mongodb://${title}:${req.body.dbPassword}@127.0.0.1:2758/?authSource=${title}\"|" \
+  -e "s|CLIENT_PORT=.*|CLIENT_PORT=${port}|" \
+  -e "s|SERVER_PORT=.*|SERVER_PORT=${port}|" \
+  -e "s|dbName=.*|dbName=${title}|" \
+  -e "s|SITE_NAME=.*|SITE_NAME=${title}|" \
+  -e "s|BASE_URL=.*|BASE_URL=https://${title}.nodeeweb.com|" \
+  -e "s|SHOP_URL=.*|SHOP_URL=https://${title}.nodeeweb.com/|" \
+  -e "s|ADMIN_URL=.*|ADMIN_URL=https://${title}.nodeeweb.com/admin|" \
+  -e "s|NODE_ENV=.*|NODE_ENV=production|" .env.local
+`
             exec(command, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error: ${error.message}`);
