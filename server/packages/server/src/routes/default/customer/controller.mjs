@@ -6,7 +6,7 @@ import axios from "axios";
 import {exec} from "child_process";
 import https from "https";
 import path from "path";
-import fs from 'fs';
+import fs, {exists, promises} from 'fs';
 import crypto from 'crypto';
 
 const self = {
@@ -404,10 +404,10 @@ const self = {
     },
     getme: function (req, res, next) {
         let Customer = req.mongoose.model('Customer');
-        if (req.headers._id)
+        if (req.headers._id){
             Customer.findById(
                 req.headers._id,
-                '_id email nickname webSite firstName lastName data phoneNumber internationalCode address',
+                '_id email nickname webSite port firstName lastName data phoneNumber internationalCode address',
                 function (err, customer) {
                     if (err || !customer) {
                         // console.log('==> pushSalonPhotos() got response err');
@@ -424,11 +424,11 @@ const self = {
                         customer: customer,
                     });
                 }
-            );
-        else
+            );}
+        else{
             res.json({
                 success: false,
-            });
+            });}
     },
 
     authCustomer: function (req, res, next) {
@@ -735,7 +735,7 @@ const self = {
 
             Customer.findOne(
                 {phoneNumber: req.body.phoneNumber},
-                '_id activationCode internationalCode webSite address firstName lastName invitation_code',
+                '_id activationCode internationalCode webSite port address firstName lastName invitation_code',
                 function (err, user) {
                     if (err) return next(err);
                     // console.log('user is:', user);
@@ -1390,6 +1390,7 @@ const self = {
 
         // Find an available port
         findPort().then((port) => {
+            let Customer = req.mongoose.model('Customer');
             const command = `cd ${targetPath} && sed -i \
   -e "s|mongodbConnectionUrl=.*|mongodbConnectionUrl=\"mongodb://${title}:${req.body.dbPassword}@127.0.0.1:2758/?authSource=${title}\"|" \
   -e "s|CLIENT_PORT=.*|CLIENT_PORT=${port}|" \
@@ -1401,27 +1402,66 @@ const self = {
   -e "s|ADMIN_URL=.*|ADMIN_URL=https://${title}.nodeeweb.com/admin|" \
   -e "s|NODE_ENV=.*|NODE_ENV=production|" .env.local
 `
-            exec(command, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return res.json({
-                        success: false,
-                        message: error.message
-                    });
-                }
-                if (stderr) {
-                    console.error(`Stderr: ${stderr}`);
-                    return res.json({
-                        success: false,
-                        message: stderr
-                    });
-                }
+            //testing command for windows
 
-                return res.json({
-                    success: true,
-                    message: `.env.local configuration updated with port ${port}`
-                });
-            });
+            Customer.findOneAndUpdate(
+                {
+                    _id: req.body._id,
+                },
+                {port: port},
+
+                {
+                    new: true,
+                    projection: {
+                        _id: 1,
+                        email: 1,
+                        nickname: 1,
+                        firstName: 1,
+                        lastName: 1,
+                        webSite: 1,
+                        port: 1,
+                        internationalCode: 1,
+                        address: 1,
+                    },
+                },
+                function (err, customer) {
+                    // console.log('==> pushSalonPhotos() got response');
+
+                    if (err || !customer) {
+                        // console.log('==> pushSalonPhotos() got response err');
+
+                        return res.json({
+                            err: err,
+                            success: false,
+                            message: 'error',
+                        });
+                    }
+
+                    exec(command, (error, stdout, stderr) => {
+                        if(error){
+                            console.error(`Error: ${error.message}`);
+                            return res.json({
+                                success: false,
+                                message: error.message
+                            });
+                        }
+                        if (stderr) {
+                            console.error(`Stderr: ${stderr}`);
+                            return res.json({
+                                success: false,
+                                message: stderr
+                            });
+                        }
+                        return res.json({
+                            success: true,
+                            message: `.env.local configuration updated with port ${port}`,
+                            customer:customer,
+                        });
+                    })
+
+                }
+            );
+
         }).catch((err) => {
             console.error('Error getting available port:', err);
             return res.json({
@@ -1430,6 +1470,181 @@ const self = {
             });
         });
     },
+    httpConfig: async function (req, res, next) {
+        const { sessionId } = req.body;
+
+        // Validate request input
+        if (!sessionId) {
+            return res.json({
+                success: false,
+                message: 'There is no sessionId!'
+            });
+        }
+
+        // Fetch customer site configurations
+        const webSitesConfigs = async () => {
+            try {
+                const Customer = req.mongoose.model('Customer');
+                const customers = await Customer.find(
+                    {},
+                    '_id firstName lastName webSite port active source email phoneNumber activationCode credit customerGroup createdAt updatedAt status companyTelNumber companyName'
+                ).exec();
+
+                if (!customers || customers.length === 0) {
+                    console.log('No customers found');
+                    return [];
+                }
+
+                return customers.filter(item => item.port && item.webSite);
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+                throw error;
+            }
+        };
+
+        // Prepare data object for the HTTP request
+        const data = {
+            proxy: "none",
+            domain: process.env.DIRECT_ADMIN_DOMAIN || "",
+            config: "",
+            custom1: "",
+            custom2: "",
+            custom3: "",
+            custom4: `|*if !SUB|
+                ProxyRequests Off
+                RewriteEngine on
+                ProxyPreserveHost on
+                ProxyPass / http://194.48.198.226:3097/
+                ProxyPassReverse / http://194.48.198.226:3097/
+    |*endif|
+    `,
+            json: "yes"
+        };
+
+        try {
+            const customerSites = await webSitesConfigs();
+            console.log('webSitesConfigs:', customerSites);
+
+            if (customerSites.length > 0) {
+                customerSites.forEach(item => {
+                    data.custom4 += `|*if SUB="${item.webSite}"|
+                ProxyRequests Off
+                RewriteEngine on
+                ProxyPreserveHost on
+                ProxyPass / http://194.48.198.226:${item.port}/
+                ProxyPassReverse / http://194.48.198.226:${item.port}/
+    |*endif|
+    `;
+                });
+            }
+
+            // Configure HTTPS agent
+            const agent = new https.Agent({ rejectUnauthorized: false });
+
+            // Set up the HTTP request
+            const config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                httpsAgent: agent,
+                url: 'https://194.48.198.226:2222/CMD_CUSTOM_HTTPD?json=yes',
+                headers: {
+                    'accept': 'application/json',
+                    'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                    'content-type': 'application/json',
+                    'cookie': `session=${sessionId}`,
+                    'origin': 'https://194.48.198.226:2222',
+                    'referer': 'https://194.48.198.226:2222/evo/admin/custom-httpd/domain/nodeeweb.com/httpd/customize/custom4',
+                    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'x-directadmin-session-id': sessionId,
+                    'x-json': 'yes'
+                },
+                data: JSON.stringify(data)
+            };
+
+            console.log('config headers:', config.headers);
+
+            // Make the HTTP request
+            const response = await axios.request(config);
+            console.log('Response data:', response.data);
+
+            return res.json({
+                success: true,
+                message: response.data
+            });
+
+        } catch (error) {
+            console.error('Error during request:', error);
+            return res.json({
+                success: false,
+                message: error.message
+            });
+        }
+    },
+    buildConfig: function (req, res, next) {
+        const { sessionId } = req.body;
+        if (!sessionId || !req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no sessionId or subdomain!'
+            })
+        }
+        let data = JSON.stringify({
+          "action": "all",
+          "json": "yes",
+          "rewrite_confs": "yes",
+        });
+
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          httpsAgent: agent,
+          url: 'https://194.48.198.226:2222/CMD_CUSTOM_HTTPD?json=yes',
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'content-type': 'application/json',
+            'cookie': `session=${sessionId}`,
+            'origin': 'https://194.48.198.226:2222',
+            'priority': 'u=1, i',
+            'referer': 'https://194.48.198.226:2222/evo/admin/custom-httpd',
+            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'x-directadmin-session-id': sessionId,
+            'x-json': 'yes'
+          },
+          data : data
+        };
+
+        axios.request(config)
+        .then((response) => {
+          console.log('configuration is built!',JSON.stringify(response.data));
+          res.json({
+              success: true,
+              message: 'configuration is built!',
+          })
+        })
+        .catch((error) => {
+          console.log("error in creating subdomain", error);
+          res.json({
+              success: false,
+              message: error,
+          })
+        });
+
+    },
+
     domainIsExist: function (req, res, next) {
         if (!req.body.title || !req.body.sessionId){
             console.log('req.body', req.body)
@@ -1483,8 +1698,6 @@ const self = {
 
     },
     getSession: function (req, res, next) {
-        // console.log('req.body.website: ', req.body.webSite)
-        console.log('sdfdsasdasdfadfs')
         let data = JSON.stringify({
           "username": process.env.DIRECT_ADMIN_USERNAME,
           "password": process.env.DIRECT_ADMIN_PASSWORD
@@ -1536,59 +1749,57 @@ const self = {
             });
         });
     },
+    getSessionAdmin: function (req, res, next) {
+        // console.log('req.body.website: ', req.body.webSite)
+        let data = JSON.stringify({
+          "username": process.env.DIRECT_ADMIN_ADMIN_USERNAME,
+          "password": process.env.DIRECT_ADMIN_ADMIN_PASSWORD
+        });
+        const agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
 
-    getSession2: function (req, res, next) {
-        let Customer = req.mongoose.model('Customer');
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: 'https://194.48.198.226:2222/api/login',
+          httpsAgent: agent,
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'content-type': 'application/json',
+            'origin': 'https://194.48.198.226:2222',
+            'priority': 'u=1, i',
+            'referer': 'https://194.48.198.226:2222/evo/login',
+            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Cookie': 'session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI'
+          },
+          data : data
+        };
 
-        // console.log('\n\n\n\n\n =====> try to set password:');
-        console.log('before hash');
-        bcrypt.hash(req.body.password, 10, function (err, hash) {
-            let obj = {};
-            if (!err) {
-                // return next(err);
-                req.body.password = hash;
-                obj['password']=req.body.password;
 
-            }
-            console.log('obj', obj);
-            Customer.findOneAndUpdate(
-                {
-                    _id: req.headers._id,
-                },
-                obj,
-
-                {
-                    new: true,
-                    projection: {
-                        _id: 1,
-                        email: 1,
-                        nickname: 1,
-                        firstName: 1,
-                        lastName: 1,
-                        internationalCode: 1,
-                        address: 1,
-                    },
-                },
-                function (err, customer) {
-                    // console.log('==> pushSalonPhotos() got response');
-                    if (req.body.token){
-                    }
-                    if (err || !customer) {
-                        // console.log('==> pushSalonPhotos() got response err');
-
-                        return res.json({
-                            err: err,
-                            success: false,
-                            message: 'error',
-                        });
-                    }
-
-                    return res.json({
-                        success: true,
-                        customer: customer,
-                    });
-                }
-            );
+        axios.request(config)
+        .then((response) => {
+          console.log('sending is successfully',JSON.stringify(response.data));
+          const resData = response.data
+            // console.log('response json', resData)
+            return res.json({
+                success: true,
+                sessionInfoAdmin: resData
+            });
+        })
+        .catch((error) => {
+          console.log("error sending to direct admin", error);
+            return res.json({
+                success: false,
+                message: error,
+            });
         });
     },
     setPasswordWithPhoneNumber: function (req, res, next) {

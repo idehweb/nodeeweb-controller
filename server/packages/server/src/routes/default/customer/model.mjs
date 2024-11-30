@@ -66,6 +66,7 @@ export default (mongoose) => {
         updatedAt: {type: Date, default: Date.now},
         score: {type: Number, default: 0},
         invitationCode: Number,
+        port: Number,
         invitation_list: [
             {
                 customer_id: String,

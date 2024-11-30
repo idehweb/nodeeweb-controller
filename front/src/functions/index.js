@@ -2083,6 +2083,19 @@ export const getSessionInfo = () => {
       });
   });
 };
+export const getSessionAmdin = () => {
+  return new Promise(function (resolve, reject) {
+    getData(`${ApiUrl}/customer/getSessionAdmin`, {}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        // let mainS = mainD.sessionInfo;
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 export const checkDomainIsAvailable = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/customer/domainIsExist`, obj, true)
@@ -2158,6 +2171,36 @@ export const addMongoDb = (title) => {
 export const changeEnvLocal = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/customer/changeEnvLocal`, obj, true)
+      .then((data) => {
+        if(data.success){
+          user = {...user, ...mainD.customer};
+          console.log("user", user)
+          let obj = {user: user};
+          SaveData(obj);
+        }
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const httpConfig = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/httpConfig`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const buildConfig = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/buildConfig`, obj, true)
       .then((data) => {
         let mainD = data['data'];
         resolve(mainD);

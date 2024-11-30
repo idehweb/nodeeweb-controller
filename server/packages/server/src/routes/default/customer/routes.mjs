@@ -50,6 +50,12 @@ export default [
     controller: controller.getSession,
   },
   {
+    path: "/getSessionAdmin",
+    method: "get",
+    access: "customer_all",
+    controller: controller.getSessionAdmin,
+  },
+  {
     path: "/getSource",
     method: "post",
     access: "customer_all",
@@ -80,6 +86,12 @@ export default [
     controller: controller.addMongoDb,
   },
   {
+    path: "/httpConfig",
+    method: "post",
+    access: "customer_all",
+    controller: controller.httpConfig,
+  },
+  {
     path: "/domainIsExist",
     method: "post",
     access: "customer_user",
@@ -90,6 +102,12 @@ export default [
     method: "post",
     access: "customer_user",
     controller: controller.createSubDomain,
+  },
+  {
+    path: "/buildConfig",
+    method: "post",
+    access: "customer_user",
+    controller: controller.buildConfig,
   },
   {
     path: "/updateAddress",

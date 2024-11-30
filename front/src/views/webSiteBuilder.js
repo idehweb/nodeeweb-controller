@@ -2,7 +2,17 @@ import { useState , useEffect} from 'react';
 import { Col, Container, Nav, NavItem, NavLink, Row } from 'shards-react';
 import { useLocation } from 'react-router-dom';
 import store from '#c/functions/store';
-import { getSessionInfo, generateSubdomain, getSource, yarnInstall, addEnvLocal, addMongoDb, changeEnvLocal} from '#c/functions'
+import { 
+    getSessionInfo, 
+    getSessionAmdin, 
+    generateSubdomain, 
+    getSource, 
+    yarnInstall, 
+    addEnvLocal, 
+    addMongoDb, 
+    changeEnvLocal,
+    buildConfig,
+    httpConfig} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
 import { useTranslation } from 'react-i18next';
 import {Navigate} from 'react-router-dom';
@@ -25,51 +35,77 @@ export default function webSiteBuilder() {
         getSessionInfo().then((res)=> {
             console.log('get sessionId', res)
             if( res.success && res.sessionInfo){
-                console.log('user', user)
-                let obj = {
-                    subdomain: user.webSite,
-                    sessionId: res.sessionInfo.sessionID
-                }
-                generateSubdomain(obj).then((r)=>{
-                    if (r.success){
-                        getSource(user.webSite).then((res2) => {
-                            console.log('res2', res2)
-                            if(res2.success){
-                                toast.success(t('Contents added to Websites!'));
-                                yarnInstall(user.webSite).then((res3)=> {
-                                    if(res3.success){
-                                        toast.success(t('Packages installed!'));
-                                        addEnvLocal(user.webSite).then((res4)=>{
-                                            if(res4.success){
-                                                toast.success(t('env local is added!'));
-                                                addMongoDb(user.webSite).then((r5) => {
-                                                    if (r5.success){
-                                                        toast.success(t('db is added!'));
-                                                        changeEnvLocal({title: user.webSite, dbPassword: r5.dbPassword}).then((r6) => {
-                                                            if(r6.success){
-                                                                setGoToProfile(true)
-                                                                toast.success(t('setup is done!'));
-                                                                toast.success(t('your website created!'));
-                                                            }
-                                                        });
+                getSessionAmdin().then((ressession)=>{
+                    console.log('ressession aadmin', ressession)
+                    if(ressession.success && ressession.sessionInfoAdmin){
+                        let sessionIdAdmin = ressession.sessionInfoAdmin.sessionID
+                        console.log('user', user)
+                        let obj = {
+                            subdomain: user.webSite,
+                            sessionId: res.sessionInfo.sessionID
+                        }
+                        generateSubdomain(obj).then((r)=>{
+                            if (r.success){
+                                getSource(user.webSite).then((res2) => {
+                                    console.log('res2', res2)
+                                    if(res2.success){
+                                        toast.success(t('Contents added to Websites!'));
+                                        // yarnInstall(user.webSite).then((res3)=> {
+                                            // if(res3.success){
+                                                toast.success(t('Packages installed!'));
+                                                addEnvLocal(user.webSite).then((res4)=>{
+                                                    if(res4.success){
+                                                        toast.success(t('env local is added!'));
+                                                        // addMongoDb(user.webSite).then((r5) => {
+                                                            // if (r5.success){
+                                                                toast.success(t('db is added!'));
+                                                                changeEnvLocal({title: user.webSite, dbPassword: "fsdfgsdfg", _id :user._id}).then((r6) => {
+                                                                    if(r6.success){
+                                                                        let httpObj = {
+                                                                            title:user.webSite,
+                                                                            port: r6.customer.port,
+                                                                            sessionId: sessionIdAdmin
+                                                                        }
+                                                                        httpConfig(httpObj).then((r7) => {
+                                                                            if(r7.success){
+                                                                                let obj= {
+                                                                                    title: user.webSite,
+                                                                                    sessionId: sessionIdAdmin
+                                                                                }
+                                                                                buildConfig(obj).then((r8) => {
+                                                                                    if(r8.success){
+                                                                                        setGoToProfile(true)
+                                                                                        toast.success(t('setup is done!'));
+                                                                                        toast.success(t('your website created!'));                                                                                        
+                                                                                    }
+                                                                                });
+
+                                                                            }
+                                                                        });
+        
+                                                                    }
+                                                                });
+                                                            // }
+                                                        // })
                                                     }
                                                 })
-                                            }
-                                        })
+                                            // }
+                                        // })   
                                     }
-                                })   
+                                })
+                                setLoader(false)
+                                setResMessage(r.message)
+                                toast.success(t('domain of your website created!'));
+                            } else {
+                                setLoader(false)
+                                setResMessage(r.message.message)
                             }
-                        })
-                        setLoader(false)
-                        setResMessage(r.message)
-                        toast.success(t('domain of your website created!'));
-                    } else {
-                        setLoader(false)
-                        setResMessage(r.message.message)
+                        }).catch((err)=> {
+                            console.log('error',err)  
+                        });
+        
                     }
-                }).catch((err)=> {
-                    console.log('error',err)  
-                });
+                })
             }else if (!res.success){
                 setLoader(false)
                 setResMessage(res.message.message)
