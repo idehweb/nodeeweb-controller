@@ -62,6 +62,7 @@ export default function webSiteBuilder() {
                                                                 toast.success(t('db is added!'));
                                                                 changeEnvLocal({title: user.webSite, dbPassword: "fsdfgsdfg", _id :user._id}).then((r6) => {
                                                                     if(r6.success){
+                                                                        toast.success(t('setup is done!'));
                                                                         let httpObj = {
                                                                             title:user.webSite,
                                                                             port: r6.customer.port,
@@ -69,6 +70,7 @@ export default function webSiteBuilder() {
                                                                         }
                                                                         httpConfig(httpObj).then((r7) => {
                                                                             if(r7.success){
+                                                                                toast.success(t('http config is done!'));
                                                                                 let obj= {
                                                                                     title: user.webSite,
                                                                                     sessionId: sessionIdAdmin
@@ -77,7 +79,7 @@ export default function webSiteBuilder() {
                                                                                     if(r8.success){
                                                                                         setLoader(false)
                                                                                         setGoToProfile(true)
-                                                                                        toast.success(t('setup is done!'));
+                                                                                        toast.success(t('settings is built!'));
                                                                                         toast.success(t('your website created!'));                                                                                        
                                                                                     }
                                                                                 });

@@ -1111,7 +1111,7 @@ const self = {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `session=${req.body.sessionId}; session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI`,
+            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
             'origin': 'https://194.48.198.226:2222',
             'priority': 'u=1, i',
             'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
@@ -1122,7 +1122,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'x-directadmin-session-id': 'FBKVPKZO4IIM3LPR2OP3RHVAV5D3DX3THECYSIA',
+            'x-directadmin-session-id': req.body.sessionId,
             'x-json': 'yes'
           },
           data : data
@@ -1633,6 +1633,7 @@ const self = {
           res.json({
               success: true,
               message: 'configuration is built!',
+              data: response.data
           })
         })
         .catch((error) => {
@@ -1665,7 +1666,7 @@ const self = {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `session=${req.body.sessionId}; session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI`,
+            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
             'priority': 'u=1, i',
             'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
@@ -1675,7 +1676,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'x-directadmin-session-id': 'FBKVPKZO4IIM3LPR2OP3RHVAV5D3DX3THECYSIA',
+            'x-directadmin-session-id': req.body.sessionId,
             'x-json': 'yes'
           }
         };
@@ -1725,7 +1726,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Cookie': 'session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI'
+            'Cookie': `session=${process.env.DIRECT_ADMIN_SESSION}`
           },
           data : data
         };
@@ -1778,7 +1779,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Cookie': 'session=M73TQAKH2KACYXKSGQB263AQBQF2LUH5LDC5IAI'
+            'Cookie': `session=${process.env.DIRECT_ADMIN_SESSION}`
           },
           data : data
         };

@@ -413,6 +413,8 @@ export default () => ({
   'setup is done!': 'تنظیمات سایت انجام شد',
   'db is added!': 'دیتابیس ساخته شد',
   'env local is added!': 'فایل تنظیمات اضافه شد',
+  'http config is done!': 'تنظیمات http انجام شد',
+  'settings is built!': 'تنظیمات سرور کامل شد',
   'Website': 'وبسایت',
   'Your email': 'ایمیل شما',
   'set new password': 'رمز عبور جدید',
