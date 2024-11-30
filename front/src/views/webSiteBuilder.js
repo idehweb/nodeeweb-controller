@@ -46,18 +46,19 @@ export default function webSiteBuilder() {
                         }
                         generateSubdomain(obj).then((r)=>{
                             if (r.success){
+                                toast.success(t('domain of your website created!'));
                                 getSource(user.webSite).then((res2) => {
                                     console.log('res2', res2)
                                     if(res2.success){
                                         toast.success(t('Contents added to Websites!'));
-                                        // yarnInstall(user.webSite).then((res3)=> {
-                                            // if(res3.success){
+                                        yarnInstall(user.webSite).then((res3)=> {
+                                            if(res3.success){
                                                 toast.success(t('Packages installed!'));
                                                 addEnvLocal(user.webSite).then((res4)=>{
                                                     if(res4.success){
                                                         toast.success(t('env local is added!'));
-                                                        // addMongoDb(user.webSite).then((r5) => {
-                                                            // if (r5.success){
+                                                        addMongoDb(user.webSite).then((r5) => {
+                                                            if (r5.success){
                                                                 toast.success(t('db is added!'));
                                                                 changeEnvLocal({title: user.webSite, dbPassword: "fsdfgsdfg", _id :user._id}).then((r6) => {
                                                                     if(r6.success){
@@ -74,6 +75,7 @@ export default function webSiteBuilder() {
                                                                                 }
                                                                                 buildConfig(obj).then((r8) => {
                                                                                     if(r8.success){
+                                                                                        setLoader(false)
                                                                                         setGoToProfile(true)
                                                                                         toast.success(t('setup is done!'));
                                                                                         toast.success(t('your website created!'));                                                                                        
@@ -85,17 +87,14 @@ export default function webSiteBuilder() {
         
                                                                     }
                                                                 });
-                                                            // }
-                                                        // })
+                                                            }
+                                                        })
                                                     }
                                                 })
-                                            // }
-                                        // })   
+                                            }
+                                        })   
                                     }
                                 })
-                                setLoader(false)
-                                setResMessage(r.message)
-                                toast.success(t('domain of your website created!'));
                             } else {
                                 setLoader(false)
                                 setResMessage(r.message.message)
