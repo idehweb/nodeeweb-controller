@@ -29,6 +29,7 @@ export default function UserAccountDetails({ title }) {
     firstName: st.firstName,
     lastName: st.lastName,
     email: st.email,
+    webSite: st.webSite,
     editMode:false,
     data: {},
     internationalCode: st.internationalCode,
@@ -49,7 +50,7 @@ export default function UserAccountDetails({ title }) {
     });
   }
   const submitForm = () => {
-    const { phoneNumber, firstName, lastName, internationalCode, email, data } =
+    const { phoneNumber, firstName, lastName, webSite, internationalCode, email, data } =
       state;
     if (!phoneNumber) return;
     submitProfile({
@@ -76,6 +77,7 @@ export default function UserAccountDetails({ title }) {
           setState({
             filled: true,
             phoneNumber: data.customer.phoneNumber,
+            webSite: data.customer.webSite,
             firstName: data.customer.firstName,
             lastName: data.customer.lastName,
             email: data.customer.email,
@@ -91,6 +93,7 @@ export default function UserAccountDetails({ title }) {
     firstName,
     lastName,
     internationalCode,
+    webSite,
     email,
     editMode,
     data = {},
@@ -98,7 +101,7 @@ export default function UserAccountDetails({ title }) {
 
   const { expireDate } = data;
   if (!(firstName && lastName)) return <Navigate to={'/login'} />;
-
+  console.log('web site : ', webSite)
   return (
     <Card small className="mb-4">
       <CardHeader className="border-bottom d-flex jsb">
@@ -142,10 +145,13 @@ export default function UserAccountDetails({ title }) {
 
                   </Col>}
                 </Row>}
-                  {phoneNumber && <Row form className={'row'}>
+                  {(phoneNumber || webSite) && <Row form className={'row'}>
                   {/* Password */}
-                  <Col md="12" className="form-group">
+                  <Col md="6" className="form-group">
                     <label htmlFor="feLastName">{t('phone number')}: {phoneNumber}</label>
+                  </Col>
+                  <Col md="6" className="form-group">
+                    <label htmlFor="feLastName">{t('Website')}: {webSite}.nodeeweb.com</label>
                   </Col>
                 </Row>}
                   {registerExtraFields && <Row>{registerExtraFields.map((item)=>{
@@ -231,7 +237,7 @@ export default function UserAccountDetails({ title }) {
                 </Row>
                 <Row form className={'row'}>
                   {/* Password */}
-                  <Col md="12" className="form-group">
+                  <Col md="6" className="form-group">
                     <label htmlFor="feLastName">{t('phone number')}</label>
                     <FormInput
                       placeholder={t('phone number')}
@@ -241,6 +247,20 @@ export default function UserAccountDetails({ title }) {
                         setState({
                           ...state,
                           phoneNumber: e.target.value,
+                        });
+                      }}
+                    />
+                  </Col>
+                  <Col md="6" className="form-group">
+                    <label htmlFor="feLastName">{t('Website')}</label>
+                    <FormInput
+                      placeholder={t('Website')}
+                      value={`${webSite}.nodeeweb.com`}
+                      disabled
+                      onChange={(e) => {
+                        setState({
+                          ...state,
+                          webSite: e.target.value,
                         });
                       }}
                     />
