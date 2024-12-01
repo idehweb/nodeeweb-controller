@@ -60,7 +60,7 @@ export default function webSiteBuilder() {
                                                         addMongoDb(user.webSite).then((r5) => {
                                                             if (r5.success){
                                                                 toast.success(t('db is added!'));
-                                                                changeEnvLocal({title: user.webSite, dbPassword: "fsdfgsdfg", _id :user._id}).then((r6) => {
+                                                                changeEnvLocal({title: user.webSite, dbPassword: r5.dbPassword, _id :user._id}).then((r6) => {
                                                                     if(r6.success){
                                                                         toast.success(t('setup is done!'));
                                                                         let httpObj = {
