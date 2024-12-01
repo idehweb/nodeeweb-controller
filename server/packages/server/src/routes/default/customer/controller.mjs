@@ -1663,9 +1663,7 @@ const self = {
             res.status(404).send("Website doesn't exist.");
             return;
         }
-
-        const command = `cd ${targetPath} && pm2 start index.mjs --name ${req.body.title}`;
-
+        const command = `cd ${targetPath} && bash -c "source .env.local && pm2 start index.mjs --name ${title}"`;
         exec(command, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error: ${error.message}`);
