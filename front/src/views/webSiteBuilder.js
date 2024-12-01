@@ -11,6 +11,9 @@ import {
     addEnvLocal, 
     addMongoDb, 
     changeEnvLocal,
+    getCDNId,
+    saveToCDN,
+    runPm2,
     buildConfig,
     httpConfig} from '#c/functions'
 import LoadingComponent from '#c/components/components-overview/LoadingComponent';
@@ -20,12 +23,13 @@ import { toast } from 'react-toastify';
 
 export default function webSiteBuilder() {
     const [loader, setLoader ]= useState(true)
+    const [loaderMessage, setLoaderMessage ]= useState('creating Website ...')
     const [goToProfile, setGoToProfile ]= useState(false)
     const [resMessage, setResMessage ]= useState('false')
     const {t} = useTranslation()
     const loader2 = (
         <div className="loadNotFound loader ">
-          {t('creating Website ...')}
+          {t(loaderMessage)}
           <LoadingComponent />
         </div>
       );
@@ -46,23 +50,23 @@ export default function webSiteBuilder() {
                         }
                         generateSubdomain(obj).then((r)=>{
                             if (r.success){
-                                toast.success(t('domain of your website created!'));
+                                setLoaderMessage(t('domain of your website created!'));
                                 getSource(user.webSite).then((res2) => {
                                     console.log('res2', res2)
                                     if(res2.success){
-                                        toast.success(t('Contents added to Websites!'));
+                                        setLoaderMessage(t('Contents added to Websites!'));
                                         yarnInstall(user.webSite).then((res3)=> {
                                             if(res3.success){
-                                                toast.success(t('Packages installed!'));
+                                                setLoaderMessage(t('Packages installed!'));
                                                 addEnvLocal(user.webSite).then((res4)=>{
                                                     if(res4.success){
-                                                        toast.success(t('env local is added!'));
+                                                        setLoaderMessage(t('env local is added!'));
                                                         addMongoDb(user.webSite).then((r5) => {
                                                             if (r5.success){
-                                                                toast.success(t('db is added!'));
+                                                                setLoaderMessage(t('db is added!'));
                                                                 changeEnvLocal({title: user.webSite, dbPassword: r5.dbPassword, _id :user._id}).then((r6) => {
                                                                     if(r6.success){
-                                                                        toast.success(t('setup is done!'));
+                                                                        setLoaderMessage(t('setup is done!'));
                                                                         let httpObj = {
                                                                             title:user.webSite,
                                                                             port: r6.customer.port,
@@ -70,17 +74,31 @@ export default function webSiteBuilder() {
                                                                         }
                                                                         httpConfig(httpObj).then((r7) => {
                                                                             if(r7.success){
-                                                                                toast.success(t('http config is done!'));
-                                                                                let obj= {
+                                                                                setLoaderMessage(t('http config is done!'));
+                                                                                let objj= {
                                                                                     title: user.webSite,
                                                                                     sessionId: sessionIdAdmin
                                                                                 }
-                                                                                buildConfig(obj).then((r8) => {
+                                                                                buildConfig(objj).then((r8) => {
                                                                                     if(r8.success){
-                                                                                        setLoader(false)
-                                                                                        setGoToProfile(true)
-                                                                                        toast.success(t('settings is built!'));
-                                                                                        toast.success(t('your website created!'));                                                                                        
+                                                                                        let objjj= {
+                                                                                            title: user.webSite,
+
+                                                                                        }
+                                                                                        setLoaderMessage(t('settings is built!'));
+                                                                                        saveToCDN(objjj).then((r10)=>{
+                                                                                            if(r10.success){
+                                                                                                setLoaderMessage(t('domain saved in CDN!'));
+                                                                                                runPm2(user.webSite).then((r11)=>{
+                                                                                                    if (r11.success){
+                                                                                                        setLoader(false)
+                                                                                                        setGoToProfile(true)
+                                                                                                        setLoaderMessage(t('your website created!'));
+                                                                                                        setLoaderMessage(t('your website is Online now!'));
+                                                                                                    }
+                                                                                                })
+                                                                                            }
+                                                                                        })
                                                                                     }
                                                                                 });
 

@@ -411,6 +411,7 @@ export default () => ({
   'domain of your website created!': 'دامنه سایت شما ساخته شد',
   'Packages installed!': 'پکیج ها نصب شد',
   'setup is done!': 'تنظیمات سایت انجام شد',
+  'domain saved in CDN!': 'دامنه در سی دی ان ذخیره شد',
   'db is added!': 'دیتابیس ساخته شد',
   'env local is added!': 'فایل تنظیمات اضافه شد',
   'http config is done!': 'تنظیمات http انجام شد',
@@ -419,6 +420,7 @@ export default () => ({
   'Your email': 'ایمیل شما',
   'set new password': 'رمز عبور جدید',
   'Enter password': 'رمزعبور را وارد کنید',
+  'your website is Online now!': 'وبسایت شما اکنون آنلاین است',
   Login: 'ورود',
   'The code is wrong!': 'کد وارد شده اشتباه است!',
   'You did not created a post until now! please create one...':

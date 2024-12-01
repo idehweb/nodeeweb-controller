@@ -2096,6 +2096,19 @@ export const getSessionAmdin = () => {
       });
   });
 };
+export const getCDNId = () => {
+  return new Promise(function (resolve, reject) {
+    getData(`${ApiUrl}/customer/getCDNId`, {}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        // let mainS = mainD.sessionInfo;
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 export const checkDomainIsAvailable = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/customer/domainIsExist`, obj, true)
@@ -2135,6 +2148,18 @@ export const getSource = (title) => {
 export const yarnInstall = (title) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/customer/yarnInstall`, {title}, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const runPm2 = (title) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/runPm2`, {title}, true)
       .then((data) => {
         let mainD = data['data'];
         resolve(mainD);
@@ -2201,6 +2226,18 @@ export const httpConfig = (obj) => {
 export const buildConfig = (obj) => {
   return new Promise(function (resolve, reject) {
     postData(`${ApiUrl}/customer/buildConfig`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const saveToCDN = (obj) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/saveToCDN`, obj, true)
       .then((data) => {
         let mainD = data['data'];
         resolve(mainD);

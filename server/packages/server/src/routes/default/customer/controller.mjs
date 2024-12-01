@@ -1626,23 +1626,128 @@ const self = {
           },
           data : data
         };
+        res.json({ "success": true , "message": "configuration is built!"});
+
+        axios.request(config)
+            .then((response) => {
+                console.log("successfully built!",JSON.stringify(response.data));
+                // return res.json({ "success": true });
+            })
+            .catch((error) => {
+                console.error("Error in request:", error.response ? error.response.data : error.message);
+                // return res.status(502).json({
+                //     success: false,
+                //     message: "Error in external service request",
+                //     error: error.response ? error.response.data : error.message
+                // });
+            });
+
+    },
+    runPm2: function (req, res, next) {
+        if (!req.body.title){
+            res.json({
+                success:false,
+                message: 'there is no domain title!'
+            })
+        }
+        const __dirname = path.resolve();
+        // Assuming `req.body.title` is coming from an Express.js request
+        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+
+        // testing paths in local
+        // const targetPath = path.resolve(__dirname, `tmpp/server/`);
+
+        if (!fs.existsSync(targetPath)) {
+            console.log('destinationPath: ', targetPath)
+            res.status(404).send("Website doesn't exist.");
+            return;
+        }
+
+        const command = `cd ${targetPath} && pm2 start index.mjs --name ${req.body.title}`;
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error: ${error.message}`);
+                return res.json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return res.json({
+                    success:true,
+                    message: stderr
+                });
+            }
+            return res.json({
+                success: true,
+                message: 'pm2 started!'
+            });
+        });
+
+    },
+    saveToCDN: async function (req, res, next) {
+        const { title } = req.body;
+        console.log('title for saving in cdn: ', title)
+        // Validate request input
+        if (!title) {
+            return res.json({
+                success: false,
+                message: 'There is no domain!'
+            });
+        }
+
+        let data = JSON.stringify({
+          "type": "A",
+          "name": title,
+          "cloud": true,
+          "value": [
+            {
+              "country": "",
+              "ip": process.env.DIRECT_ADMIN_IP
+            }
+          ],
+          "upstream_https": "default",
+          "ip_filter_mode": {
+            "count": "single",
+            "geo_filter": "none",
+            "order": "none"
+          },
+          "ttl": 120
+        });
+
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: `https://napi.arvancloud.ir/cdn/4.0/domains/${process.env.DIRECT_ADMIN_DOMAIN}/dns-records`,
+          headers: {
+            'authority': 'napi.arvancloud.ir',
+            'accept': 'application/json, text/plain, */*',
+            'authorization': process.env.ARVAND_CLOUD_API_KEY,
+            'cache-control': 'no-cache',
+            'content-type': 'application/json'
+          },
+          data : data
+        };
 
         axios.request(config)
         .then((response) => {
-          console.log('configuration is built!',JSON.stringify(response.data));
-          res.json({
-              success: true,
-              message: 'configuration is built!',
-              data: response.data
+          console.log('true: ',JSON.stringify(response.data));
+          return res.json({
+              "success": true,
+              "message": "domain saved in CDN successfully"
           })
         })
         .catch((error) => {
-          console.log("error in creating subdomain", error);
-          res.json({
-              success: false,
-              message: error,
+          console.log('false: ',error);
+          return res.json({
+              "success": false,
+              "error": error
           })
         });
+
 
     },
 

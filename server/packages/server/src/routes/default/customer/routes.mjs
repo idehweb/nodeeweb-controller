@@ -110,6 +110,18 @@ export default [
     controller: controller.buildConfig,
   },
   {
+    path: "/saveToCDN",
+    method: "post",
+    access: "customer_user",
+    controller: controller.saveToCDN,
+  },
+  {
+    path: "/runPm2",
+    method: "post",
+    access: "customer_user",
+    controller: controller.runPm2,
+  },
+  {
     path: "/updateAddress",
     method: "put",
     access: "customer_user",
