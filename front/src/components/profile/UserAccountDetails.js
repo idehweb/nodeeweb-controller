@@ -103,7 +103,7 @@ export default function UserAccountDetails({ title }) {
   if (!(firstName && lastName)) return <Navigate to={'/login'} />;
   console.log('web site : ', webSite)
   return (
-    <Card small className="mb-4">
+    <Card small className="mb-  4">
       <CardHeader className="border-bottom d-flex jsb">
         <h6 className="m-0">{title}</h6>
         {expireDate && (

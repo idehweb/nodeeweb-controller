@@ -527,12 +527,11 @@ class LoginForm extends Component {
   componentDidMount() {
     getSessionInfo().then((r)=>{
       this.setState({
-        sessionId: r.sessionInfo.sessionID
+        sessionId: r?.sessionInfo?.sessionID
       })
     })
     console.log('Component mounted');
   }
-
 
 
   componentWillUnmount() {

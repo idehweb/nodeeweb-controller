@@ -1140,7 +1140,7 @@ const self = {
           console.log("error in creating subdomain", error);
           res.json({
               success: false,
-              message: error,
+              message: error.message,
           })
         });
 
@@ -1902,7 +1902,7 @@ const self = {
           console.log("error sending to direct admin", error);
             return res.json({
                 success: false,
-                message: error,
+                message: error.message,
             });
         });
     },

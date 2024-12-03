@@ -6,6 +6,13 @@
   src: url(fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
   font-display: swap;
 }
+.scrolling-container {
+  width: 110px;
+  height: 30px;  /* Adjust height as needed */
+  overflow: hidden;
+  position: relative;
+}
+
 .loader-icon{
   background-color: var(--primary);
 }
