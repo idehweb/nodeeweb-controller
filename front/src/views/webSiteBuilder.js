@@ -25,7 +25,7 @@ import { use } from 'i18next';
 export default function webSiteBuilder() {
     const [loader, setLoader ]= useState(true)
     const [loaderMessage, setLoaderMessage ]= useState('')
-    const [waitingMessage, setWaitingMessage ]= useState(t('creating Website ...'))
+    const [waitingMessage, setWaitingMessage ]= useState('creating Website ...')
     const [goToProfile, setGoToProfile ]= useState(false)
     const [changeText, setChangeText ]= useState(false)
     const [resMessage, setResMessage ]= useState('false')
