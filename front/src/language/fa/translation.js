@@ -181,6 +181,7 @@ export default () => ({
   'last step': 'مرحله قبل',
   'next step': 'مرحله بعد',
   profile: 'حساب کاربری',
+  'profile': 'پروفایل',
   'Add new address': 'افزودن نشانی جدید',
   Title: 'عنوان',
   'Street Address': 'نشانی دقیق',

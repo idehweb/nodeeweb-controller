@@ -43,7 +43,7 @@ export default function webSiteBuilder() {
     const [waitingMessage, setWaitingMessage ]= useState('creating Website ...')
     const [goToProfile, setGoToProfile ]= useState(false)
     const [changeText, setChangeText ]= useState(false)
-    const [resMessage, setResMessage ]= useState('false')
+    const [resMessage, setResMessage ]= useState('an error occured!')
     const [currentIndex, setCurrentIndex] = useState(0);
     const {t} = useTranslation()
     const [textArray , setTextArray] = useState([t('adding Contents ...'), 
@@ -68,7 +68,7 @@ export default function webSiteBuilder() {
           // Update the waiting message and the current index
           setWaitingMessage(textArray[currentIndex]);
           setCurrentIndex((prevIndex) => (prevIndex + 1) % textArray.length);
-        }, 4500); // 3 seconds interval
+        }, 4000); // 3 seconds interval
     
         // Clean up the interval when the component unmounts
         return () => clearInterval(interval);
@@ -142,7 +142,7 @@ export default function webSiteBuilder() {
                                                                                                     if (r11.success){
                                                                                                         setLoader(false)
                                                                                                         setIsDone(true)
-                                                                                                        setGoToProfile(true)
+                                                                                                        // setGoToProfile(true)
                                                                                                         // setLoaderMessage(t('your website created!'));
                                                                                                         // setLoaderMessage(t('your website is Online now!'));
                                                                                                     } else {
@@ -228,6 +228,11 @@ export default function webSiteBuilder() {
         </div>
         {(!loader && isDone) && 
         <>
+        <div className='text-align-right'>
+            <h6>            <a href={`/profile`} target="_self" rel="noopener noreferrer">
+                {t('profile')}
+            </a></h6>
+        </div>
         <div className='text-align-center mb-5'>
             <h5>{t('Congratulations! Your site has been successfully created')}</h5>
         </div>
