@@ -155,14 +155,15 @@ const dataProvider = (apiUrl) =>
       }).then(({ json }) => ({ data: json })),
 
     // json-server doesn't handle filters on DELETE route, so we fallback to calling DELETE n times instead
-    deleteMany: (resource, params) =>
+    deleteMany:async (resource, params) => {
       Promise.all(
         params.ids.map((id) =>
           httpClient(`${apiUrl}/${resource}/${id}`, {
             method: 'DELETE',
           })
         )
-      ).then((res) => ({ data: res.map(({ json }) => json._id) })),
+      ).then((res) => ({ data: res.map(({ json }) => json._id) }))
+    },
   });
 
 export default dataProvider(ADMIN_ROUTE);

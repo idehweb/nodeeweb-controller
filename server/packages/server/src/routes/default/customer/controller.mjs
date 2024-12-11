@@ -1837,7 +1837,7 @@ const self = {
 
         axios.request(config)
         .then((response) => {
-          console.log('sending is successfully',JSON.stringify(response.data));
+          console.log('getting session is successfully',JSON.stringify(response.data));
           const resData = response.data
             // console.log('response json', resData)
             return res.json({
@@ -1846,7 +1846,7 @@ const self = {
             });
         })
         .catch((error) => {
-          console.log("error sending to direct admin", error);
+          console.log("error in getting session", error);
             return res.json({
                 success: false,
                 message: error,

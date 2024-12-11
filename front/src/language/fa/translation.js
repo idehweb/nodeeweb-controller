@@ -406,7 +406,7 @@ export default () => ({
   'First name': 'نام',
   'Last name': 'نام خانوادگی',
   'Your last name': 'نام خانوادگی شما',
-  'Your Website Name': 'نام سایت شما',
+  'Your domain Name': 'نام دامنه شما',
   'your website created!': 'سایت شما ساخته شد',
   'website already exist!': 'این سایت از قبل وجود دارد',
   'Contents added to Websites!': 'محتوا به سایتتان اضافه شد',

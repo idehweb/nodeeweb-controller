@@ -218,6 +218,7 @@ export default function webSiteBuilder() {
     const location = useLocation();
     let { hash = 'profile' } = location;
     const [tab, setTab] = useState(() => hash.replace('#', '') || 'profile');
+    const token = localStorage.getItem('token')
     if(goToProfile){
         return <Navigate to={'/profile'} />;
     }
@@ -240,13 +241,13 @@ export default function webSiteBuilder() {
         <h6>
             {`${t('your website')}: `}
             <a href={`https://${user.webSite}.nodeeweb.com`} target="_blank" rel="noopener noreferrer">
-                www.{user.webSite}.nodeeweb.com
+                {user.webSite}.nodeeweb.com
             </a>
         </h6>
         <h6>
             {`${t('your website panel is')}: `}
             <a href={`https://${user.webSite}.nodeeweb.com/admin`} target="_blank" rel="noopener noreferrer">
-                www.{user.webSite}.nodeeweb.com/admin
+                {user.webSite}.nodeeweb.com/admin
             </a>
         </h6>
         <h6>{`${t('username')}: admin`}</h6>

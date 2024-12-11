@@ -1,9 +1,148 @@
 import mongoose from "mongoose";
 import _ from 'lodash'
 import global from '#root/global';
-
+import https from "https";
+import axios from "axios";
+import path from "path";
+import {exec} from "child_process";
 
 var self = (Model) => {
+    function getSession(res) {
+        return new Promise((resolve, reject)=>{
+            let data = JSON.stringify({
+              "username": process.env.DIRECT_ADMIN_USERNAME,
+              "password": process.env.DIRECT_ADMIN_PASSWORD
+            });
+            const agent = new https.Agent({
+              rejectUnauthorized: false,
+            });
+
+            let config = {
+              method: 'post',
+              maxBodyLength: Infinity,
+              url: 'https://194.48.198.226:2222/api/login',
+              httpsAgent: agent,
+              headers: {
+                'accept': 'application/json',
+                'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                'content-type': 'application/json',
+                'origin': 'https://194.48.198.226:2222',
+                'priority': 'u=1, i',
+                'referer': 'https://194.48.198.226:2222/evo/login',
+                'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                'Cookie': `session=${process.env.DIRECT_ADMIN_SESSION}`
+              },
+              data : data
+            };
+
+
+            axios.request(config)
+            .then((response) => {
+              console.log('getting session is successfully',JSON.stringify(response.data));
+              const resData = response.data
+                resolve({
+                    "success": true,
+                    "response": resData
+                })
+            })
+            .catch((error) => {
+              console.log("error in getting session", error);
+                resolve({
+                    "success": false,
+                    "message": error
+                })
+            });
+        })
+
+    }
+    function removeDomain(domain, sessionId) {
+        return new Promise((resolve, reject)=>{
+            let data = JSON.stringify({
+              "select0": domain,
+              "domain": process.env.DIRECT_ADMIN_DOMAIN,
+              "json": "yes",
+              "action": "delete",
+              "contents": "no"
+            });
+            const agent = new https.Agent({
+              rejectUnauthorized: false,
+            });
+            let config = {
+              method: 'post',
+              maxBodyLength: Infinity,
+              httpsAgent: agent,
+              url: 'https://194.48.198.226:2222/CMD_SUBDOMAIN?json=yes',
+              headers: {
+                'accept': 'application/json',
+                'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                'content-type': 'application/json',
+                'cookie': `session=${sessionId}`,
+                'origin': 'https://194.48.198.226:2222',
+                'priority': 'u=1, i',
+                'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
+                'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                'x-directadmin-session-id': sessionId,
+                'x-json': 'yes'
+              },
+              data : data
+            };
+
+            axios.request(config)
+            .then((response) => {
+              console.log('removing is successfully',JSON.stringify(response.data));
+              const resData = response.data
+                console.log('response json', resData)
+                resolve({
+                    "success": true,
+                    "response": resData
+                })
+            })
+            .catch((error) => {
+              console.log("error removing domain", error);
+                resolve({
+                    "success": false,
+                    "message": error
+                })
+            });
+        })
+
+    }
+
+    function removeContent(title){
+        return new Promise((resolve,reject)=>{
+            const __dirname = path.resolve();
+            const targetPath = path.resolve(__dirname, `../../../${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
+            const command = `rm -rf ${targetPath}`
+            exec(command, (error, stdout) => {
+                if (error || !stdout) {
+                    // If there's no output, the port is available
+                    resolve({
+                        "success": false,
+                        "output": error
+                    })
+                } else {
+                    // If the port is busy, resolve with null
+                    resolve({
+                        "success": true,
+                        "output": stdout
+                    });
+                }
+            });
+        })
+
+    }
     // console.log('Model', Model)
     return ({
         all: function (req, res, next) {
@@ -234,25 +373,90 @@ var self = (Model) => {
             });
         }
         ,
-        destroy: function (req, res, next) {
-            Model.findByIdAndDelete(req.params.id,
-                function (err, menu) {
-                    if (err || !menu) {
-                        res.json({
+        destroy:async function (req, res, next) {
+            try {
+
+                const resource = req.baseUrl.split('/').pop(); // "customer"
+                console.log("resource: ", resource);
+
+                if (resource === 'customer') {
+                    console.log('Resource is customer');
+
+                    // Find the customer by ID
+                    const customer = await Model.findById(req.params.id, 'webSite name').exec();
+
+                    if (!customer) {
+                        return res.status(404).json({
                             success: false,
-                            message: 'error!'
+                            message: 'Customer not found!'
                         });
-                        return 0;
                     }
-                    res.json({
-                        success: true,
-                        message: 'Deleted!'
-                    });
-                    return 0;
 
+                    if (customer.webSite) {
+                        console.log(`Customer has a website with domain: ${customer.webSite}`);
+                        const domain = customer.webSite;
 
+                        // Get session ID
+                        const sessionResponse = await getSession();
+
+                        if (!sessionResponse.success) {
+                            return res.json({
+                                success: false,
+                                message: 'Error in getting sessionID!'
+                            });
+                        }
+
+                        const sessionId = sessionResponse.response?.sessionID;
+
+                        // Remove domain
+                        const removeDomainResponse = await removeDomain(domain, sessionId);
+
+                        if (!removeDomainResponse.success) {
+                            return res.json({
+                                success: false,
+                                message: 'Error in removing domain'
+                            });
+                        }
+
+                        console.log('Domain deleted successfully!');
+
+                        // Remove content from the website
+                        const removeContentResponse = await removeContent(domain);
+
+                        if (!removeContentResponse.success) {
+                            return res.json({
+                                success: false,
+                                message: 'Error in clearing content of website'
+                            });
+                        }
+
+                        console.log('Content of website cleared successfully!');
+                    } else {
+                        console.log('Customer does not have a website');
+                    }
                 }
-            );
+
+                // Delete the customer record
+                const deletedMenu = await Model.findByIdAndDelete(req.params.id);
+
+                if (!deletedMenu) {
+                    return res.json({
+                        success: false,
+                        message: 'Error in deleting the resource'
+                    });
+                }
+
+                res.json({
+                    success: true,
+                    message: 'Deleted!'
+                });
+            } catch (error) {
+                console.log('Error in destroy:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Internal server error'
+                });
+            }
         }
         ,
         edit: function (req, res, next) {

@@ -861,7 +861,7 @@ class LoginForm extends Component {
                       </InputGroup>
                     </Col>
                     <Col md="12" className="form-group">
-                      <label htmlFor="ollastname">{t('Your Website Name')}</label>
+                      <label htmlFor="ollastname">{t('Your domain Name')}</label>
 
                       <InputGroup className="mb-3">
                         <FormInput

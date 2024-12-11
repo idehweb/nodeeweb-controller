@@ -90,6 +90,20 @@ export const changeThemeDataFunc = () =>
       });
   });
 
+export const getSessionInfo = () => {
+  return new Promise(function (resolve, reject) {
+    API.get(`/customer/getSession`, {},)
+      .then((data) => {
+        let mainD = data['data'];
+        // let mainS = mainD.sessionInfo;
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 export const restartSystem = () => {
   return new Promise(function (resolve, reject) {
     API.post('/settings/restart')
