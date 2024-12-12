@@ -1105,16 +1105,16 @@ const self = {
         let config = {
           method: 'post',
           maxBodyLength: Infinity,
-          url: 'https://194.48.198.226:2222/CMD_SUBDOMAIN?json=yes',
+          url: `${process.env.DIRECT_ADMIN_URL}/CMD_SUBDOMAIN?json=yes`,
           httpsAgent: agent,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
             'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
-            'origin': 'https://194.48.198.226:2222',
+            'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
-            'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
+            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -1514,8 +1514,8 @@ const self = {
                 ProxyRequests Off
                 RewriteEngine on
                 ProxyPreserveHost on
-                ProxyPass / http://194.48.198.226:3097/
-                ProxyPassReverse / http://194.48.198.226:3097/
+                ProxyPass / http://${process.env.DIRECT_ADMIN_IP}:${process.env.SERVER_USER_PORT}/
+                ProxyPassReverse / http://${process.env.DIRECT_ADMIN_IP}:${process.env.SERVER_USER_PORT}/
     |*endif|
     `,
             json: "yes"
@@ -1531,8 +1531,8 @@ const self = {
                 ProxyRequests Off
                 RewriteEngine on
                 ProxyPreserveHost on
-                ProxyPass / http://194.48.198.226:${item.port}/
-                ProxyPassReverse / http://194.48.198.226:${item.port}/
+                ProxyPass / http://${process.env.DIRECT_ADMIN_IP}:${item.port}/
+                ProxyPassReverse / http://${process.env.DIRECT_ADMIN_IP}:${item.port}/
     |*endif|
     `;
                 });
@@ -1546,14 +1546,14 @@ const self = {
                 method: 'post',
                 maxBodyLength: Infinity,
                 httpsAgent: agent,
-                url: 'https://194.48.198.226:2222/CMD_CUSTOM_HTTPD?json=yes',
+                url: `${process.env.DIRECT_ADMIN_URL}/CMD_CUSTOM_HTTPD?json=yes`,
                 headers: {
                     'accept': 'application/json',
                     'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
                     'content-type': 'application/json',
                     'cookie': `session=${sessionId}`,
-                    'origin': 'https://194.48.198.226:2222',
-                    'referer': 'https://194.48.198.226:2222/evo/admin/custom-httpd/domain/nodeeweb.com/httpd/customize/custom4',
+                    'origin': process.env.DIRECT_ADMIN_URL,
+                    'referer': `${process.env.DIRECT_ADMIN_URL}/evo/admin/custom-httpd/domain/${process.env.DIRECT_ADMIN_DOMAIN}/httpd/customize/custom4`,
                     'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
                     'sec-ch-ua-mobile': '?0',
                     'sec-ch-ua-platform': '"Windows"',
@@ -1605,15 +1605,15 @@ const self = {
           method: 'post',
           maxBodyLength: Infinity,
           httpsAgent: agent,
-          url: 'https://194.48.198.226:2222/CMD_CUSTOM_HTTPD?json=yes',
+          url: `${process.env.DIRECT_ADMIN_URL}/CMD_CUSTOM_HTTPD?json=yes`,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
             'cookie': `session=${sessionId}`,
-            'origin': 'https://194.48.198.226:2222',
+            'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
-            'referer': 'https://194.48.198.226:2222/evo/admin/custom-httpd',
+            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/admin/custom-httpd`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -1764,14 +1764,14 @@ const self = {
           method: 'get',
           maxBodyLength: Infinity,
           httpsAgent: agent,
-          url: `https://194.48.198.226:2222/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=nodeeweb.com&type=subdomain`,
+          url: `${process.env.DIRECT_ADMIN_URL}/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=nodeeweb.com&type=subdomain`,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
             'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
             'priority': 'u=1, i',
-            'referer': 'https://194.48.198.226:2222/evo/user/subdomains',
+            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -1813,15 +1813,15 @@ const self = {
         let config = {
           method: 'post',
           maxBodyLength: Infinity,
-          url: 'https://194.48.198.226:2222/api/login',
+          url: `${process.env.DIRECT_ADMIN_URL}/api/login`,
           httpsAgent: agent,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'origin': 'https://194.48.198.226:2222',
+            'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
-            'referer': 'https://194.48.198.226:2222/evo/login',
+            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/login`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -1866,15 +1866,15 @@ const self = {
         let config = {
           method: 'post',
           maxBodyLength: Infinity,
-          url: 'https://194.48.198.226:2222/api/login',
+          url: `${process.env.DIRECT_ADMIN_URL}/api/login`,
           httpsAgent: agent,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'origin': 'https://194.48.198.226:2222',
+            'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
-            'referer': 'https://194.48.198.226:2222/evo/login',
+            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/login`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
