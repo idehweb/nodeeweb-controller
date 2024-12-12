@@ -1111,9 +1111,7 @@ const self = {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; 
-                _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect;  
-                session=${req.body.sessionId}`,
+            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
             'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
             'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
@@ -1806,6 +1804,7 @@ const self = {
 
     },
     getSession: function (req, res, next) {
+        console.log('geting session')
         let data = JSON.stringify({
           "username": process.env.DIRECT_ADMIN_USERNAME,
           "password": process.env.DIRECT_ADMIN_PASSWORD
@@ -1818,22 +1817,22 @@ const self = {
           method: 'post',
           maxBodyLength: Infinity,
           url: `${process.env.DIRECT_ADMIN_URL}/api/login`,
-          httpsAgent: agent,
+          httpsAgent:agent,
           headers: {
             'accept': 'application/json',
-            'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+            'accept-language': 'en-US,en;q=0.9',
             'content-type': 'application/json',
+            'cookie': process.env.DIRECT_ADMIN_SESSION,
             'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
-            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/login`,
+            'referer': `${process.env.DIRECT_ADMIN_URL}/login?redirect=%2Fuser%2Fsubdomains`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
             'sec-fetch-dest': 'empty',
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Cookie': `session=${process.env.DIRECT_ADMIN_SESSION}`
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
           },
           data : data
         };
@@ -1841,7 +1840,7 @@ const self = {
 
         axios.request(config)
         .then((response) => {
-          console.log('getting session is successfully',JSON.stringify(response.data));
+          console.log('getting session is successfully',response.data);
           const resData = response.data
             // console.log('response json', resData)
             return res.json({
@@ -1886,7 +1885,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Cookie': `session=${process.env.DIRECT_ADMIN_SESSION}`
+            'Cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect`
           },
           data : data
         };
