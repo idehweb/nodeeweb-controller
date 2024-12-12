@@ -1111,7 +1111,9 @@ const self = {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
+            'cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; 
+                _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect;  
+                session=${req.body.sessionId}`,
             'origin': process.env.DIRECT_ADMIN_URL,
             'priority': 'u=1, i',
             'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
@@ -1769,7 +1771,9 @@ const self = {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
+            'cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; 
+                _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect; 
+                session=${req.body.sessionId}`,
             'priority': 'u=1, i',
             'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
