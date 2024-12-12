@@ -5,6 +5,7 @@ import https from "https";
 import axios from "axios";
 import path from "path";
 import {exec} from "child_process";
+import fs from "fs";
 
 var self = (Model) => {
     function getSession(res) {
@@ -124,10 +125,18 @@ var self = (Model) => {
         return new Promise((resolve,reject)=>{
             const __dirname = path.resolve();
             const targetPath = path.resolve(__dirname, `../../../${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
-            const command = `rm -rf ${targetPath}`
+            if (!fs.existsSync(targetPath)) {
+                console.log('destinationPath: ', targetPath)
+                    resolve({
+                        "success": false,
+                        "output": 'website directory is not exist!'
+                    })            }
+            const command = `rm -r ${targetPath}`
+            console.log('command for removing content: ', command)
             exec(command, (error, stdout) => {
                 if (error || !stdout) {
                     // If there's no output, the port is available
+                    console.log('error in clearing content ', error)
                     resolve({
                         "success": false,
                         "output": error
@@ -136,7 +145,7 @@ var self = (Model) => {
                     // If the port is busy, resolve with null
                     resolve({
                         "success": true,
-                        "output": stdout
+                        "message": "content of website deleted successfully!"
                     });
                 }
             });
