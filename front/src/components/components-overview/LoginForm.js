@@ -63,7 +63,7 @@ class LoginForm extends Component {
       countryCode: st.countryCode,
       getPassword: false,
       firstName: st.user.firstName,
-      webSite: st.user.webSite,
+      webSite: st.user.webSite.title,
       lastName: st.user.lastName,
       passwordAuthentication: st?.themeData?.passwordAuthentication,
       registerExtraFields: st?.themeData?.registerExtraFields,

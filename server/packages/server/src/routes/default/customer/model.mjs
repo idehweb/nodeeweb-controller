@@ -20,7 +20,10 @@ export default (mongoose) => {
         firstName: String,
         expire: Date,
         lastName: String,
-        webSite: String,
+        webSite: {
+            title:String,
+            _id: String
+        },
         birth_day: String,
         birth_month: String,
         birthday: String,

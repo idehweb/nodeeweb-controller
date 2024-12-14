@@ -43,6 +43,8 @@ export default function webSiteBuilder() {
     const [waitingMessage, setWaitingMessage ]= useState('creating Website ...')
     const [goToProfile, setGoToProfile ]= useState(false)
     const [changeText, setChangeText ]= useState(false)
+    const [websiteTitle, setWebsiteTitle ]= useState('')
+    const [websiteId, setWebsiteId ]= useState('')
     const [resMessage, setResMessage ]= useState('an error occured!')
     const [currentIndex, setCurrentIndex] = useState(0);
     const {t} = useTranslation()
@@ -73,7 +75,11 @@ export default function webSiteBuilder() {
         // Clean up the interval when the component unmounts
         return () => clearInterval(interval);
       }, [textArray, currentIndex]);
-    let {user} = store.getState().store; 
+    let {user} = store.getState().store;
+    if(user.webSite){
+        setWebsiteTitle(user.webSite?.title)
+        setWebsiteId(user.webSite?._id)
+    }
     useEffect(() => {
         console.log('get session info from direct admin ...')
         getSessionInfo().then((res)=> {
@@ -86,7 +92,7 @@ export default function webSiteBuilder() {
                         let sessionId = res.sessionInfo.sessionID
                         console.log('user', user)
                         let obj = {
-                            subdomain: user.webSite,
+                            subdomain: websiteTitle,
                             sessionId: sessionId 
                         }
                         generateSubdomain(obj).then((r)=>{
@@ -94,7 +100,7 @@ export default function webSiteBuilder() {
                                 // setLoaderMessage(t('domain of your website created!'));
                                 // setWaitingMessage(t('adding Contents ...'));
                                 let sourceObj = {
-                                    title: user.webSite,
+                                    title: websiteTitle,
                                     sessionId: sessionId,
                                 }
                                 getSource(sourceObj).then((res2) => {
@@ -102,24 +108,24 @@ export default function webSiteBuilder() {
                                     if(res2.success){
                                         // setLoaderMessage(t('Contents added to Websites!'));
                                         // setWaitingMessage(t('installing Packages ...'));
-                                        yarnInstall(user.webSite).then((res3)=> {
+                                        yarnInstall(websiteTitle).then((res3)=> {
                                             if(res3.success){
                                                 // setLoaderMessage(t('Packages installed!'));
                                                 // setWaitingMessage(t('adding env local ...'));
-                                                addEnvLocal(user.webSite).then((res4)=>{
+                                                addEnvLocal(websiteTitle).then((res4)=>{
                                                     if(res4.success){
                                                         // setLoaderMessage(t('env local is added!'));
                                                         // setWaitingMessage(t('adding db ...'));
-                                                        addMongoDb(user.webSite).then((r5) => {
+                                                        addMongoDb(websiteTitle).then((r5) => {
                                                             if (r5.success){
                                                                 // setLoaderMessage(t('db is added!'));
                                                                 // setWaitingMessage(t('setting up ...'));
-                                                                changeEnvLocal({title: user.webSite, dbPassword: r5.dbPassword, _id :user._id}).then((r6) => {
+                                                                changeEnvLocal({title: websiteTitle, dbPassword: r5.dbPassword, _id :user._id}).then((r6) => {
                                                                     if(r6.success){
                                                                         // setLoaderMessage(t('setup is done!'));
                                                                         // setWaitingMessage(t('configurating http ...'));
                                                                         let httpObj = {
-                                                                            title:user.webSite,
+                                                                            title:websiteTitle,
                                                                             port: r6.customer.port,
                                                                             sessionId: sessionIdAdmin
                                                                         }
@@ -128,14 +134,14 @@ export default function webSiteBuilder() {
                                                                                 // setLoaderMessage(t('http config is done!'));
                                                                                 // setWaitingMessage(t('building Settings ...'));
                                                                                 let objj= {
-                                                                                    title: user.webSite,
+                                                                                    title: websiteTitle,
                                                                                     sessionId: sessionIdAdmin
                                                                                 }
                                                                                 buildConfig(objj).then((r8) => {
                                                                                     if(r8.success){
                                                                                         let objjj= {
-                                                                                            title: user.webSite,
-
+                                                                                            title: websiteTitle,
+                                                                                            customerId: user._id
                                                                                         }
                                                                                         // setLoaderMessage(t('settings is built!'));
                                                                                         // setWaitingMessage(t('saving domain in CDN ...'));
@@ -143,7 +149,7 @@ export default function webSiteBuilder() {
                                                                                             if(r10.success){
                                                                                                 // setLoaderMessage(t('domain saved in CDN!'));
                                                                                                 // setWaitingMessage(t('final process ...'));
-                                                                                                runPm2(user.webSite).then((r11)=>{
+                                                                                                runPm2(websiteTitle).then((r11)=>{
                                                                                                     if (r11.success){
                                                                                                         setLoader(false)
                                                                                                         setIsDone(true)
@@ -245,14 +251,14 @@ export default function webSiteBuilder() {
         <div className='text-align-right'>
         <h6>
             {`${t('your website')}: `}
-            <a href={`https://${user.webSite}.nodeeweb.com`} target="_blank" rel="noopener noreferrer">
-                {user.webSite}.nodeeweb.com
+            <a href={`https://${websiteTitle}.nodeeweb.com`} target="_blank" rel="noopener noreferrer">
+                {websiteTitle}.nodeeweb.com
             </a>
         </h6>
         <h6>
             {`${t('your website panel is')}: `}
-            <a href={`https://${user.webSite}.nodeeweb.com/admin`} target="_blank" rel="noopener noreferrer">
-                {user.webSite}.nodeeweb.com/admin
+            <a href={`https://${websiteTitle}.nodeeweb.com/admin`} target="_blank" rel="noopener noreferrer">
+                {websiteTitle}.nodeeweb.com/admin
             </a>
         </h6>
         <h6>{`${t('username')}: admin`}</h6>

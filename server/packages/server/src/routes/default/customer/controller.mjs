@@ -9,6 +9,7 @@ import path from "path";
 import fs, {exists, promises} from 'fs';
 import crypto from 'crypto';
 import qs from 'qs'
+import mongoose from 'mongoose'
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1462,6 +1463,7 @@ const self = {
   -e "s|CLIENT_PORT=.*|CLIENT_PORT=${port}|" \
   -e "s|SERVER_PORT=.*|SERVER_PORT=${port}|" \
   -e "s|dbName=.*|dbName=${title}|" \
+  -e "s|dbPassword=.*|dbPassword=${req.body.dbPassword}|" \
   -e "s|SITE_NAME=.*|SITE_NAME=${title}|" \
   -e "s|BASE_URL=.*|BASE_URL=https://${title}.nodeeweb.com|" \
   -e "s|SHOP_URL=.*|SHOP_URL=https://${title}.nodeeweb.com/|" \
@@ -1593,7 +1595,7 @@ const self = {
 
             if (customerSites.length > 0) {
                 customerSites.forEach(item => {
-                    data.custom4 += `|*if SUB="${item.webSite}"|
+                    data.custom4 += `|*if SUB="${item.webSite.title}"|
                 ProxyRequests Off
                 RewriteEngine on
                 ProxyPreserveHost on
@@ -1753,15 +1755,17 @@ const self = {
 
     },
     saveToCDN: async function (req, res, next) {
-        const { title } = req.body;
+        const Customer = mongoose.model('customer')
+        const { title , _id} = req.body;
         console.log('title for saving in cdn: ', title)
         // Validate request input
-        if (!title) {
+        if (!title || !_id) {
             return res.json({
                 success: false,
-                message: 'There is no domain!'
+                message: 'There is no domain or _id!'
             });
         }
+
 
         let data = JSON.stringify({
           "type": "A",
@@ -1798,11 +1802,26 @@ const self = {
 
         axios.request(config)
         .then((response) => {
-          console.log('true: ',JSON.stringify(response.data));
-          return res.json({
-              "success": true,
-              "message": "domain saved in CDN successfully"
-          })
+            console.log('true: ',response.data);
+            Customer.findOneAndUpdate({_id: _id} ,
+                {webSite:{
+                    _id: response.data.id
+                    }},
+                (err, customer)=> {
+                if(err){
+                    console.log('error in finding customer')
+                      return res.json({
+                          "success": false,
+                          "message": "error in updating customer webSite"
+                      })
+                }else {
+                    console.log('customer updated: ', customer)
+                    return res.json({
+                      "success": true,
+                      "message": "domain saved in CDN successfully"
+                    })
+                }
+            })
         })
         .catch((error) => {
           console.log('false: ',error);
