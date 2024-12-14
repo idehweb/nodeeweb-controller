@@ -8,6 +8,7 @@ import https from "https";
 import path from "path";
 import fs, {exists, promises} from 'fs';
 import crypto from 'crypto';
+import qs from 'qs'
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1145,55 +1146,118 @@ const self = {
         });
 
     },
-    getSource: function (req, res, next) {
-        if (!req.body.title){
-            res.json({
-                success:false,
-                message: 'there is no domain title!'
-            })
-        }
-        const __dirname = path.resolve();
-        // Assuming `req.body.title` is coming from an Express.js request
-        const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
-        const sourcePath = path.resolve(__dirname, '../source/*');
-        const destinationPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/`);
-
-        // testing paths in local
-        // const sourcePath = path.resolve(__dirname, '../source/');
-        // const destinationPath = path.resolve(__dirname, `tmpp`);
-
-        console.log(sourcePath, destinationPath)
-        if (!fs.existsSync(destinationPath)) {
-            console.log('destinationPath: ', destinationPath)
-            res.status(404).send("Website doesn't exist.");
-            return;
-        }
-
-        const command = `cp -r ${sourcePath} ${destinationPath}`;
-
-        // Testing command for windows
-        // const command = `xcopy ${sourcePath} ${destinationPath} /E /H /C /I`;
-
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error: ${error.message}`);
+    getSource: async function (req, res, next) {
+        try {
+            // Validate input
+            if (!req.body.title || !req.body.sessionId) {
                 return res.json({
                     success: false,
-                    message: error.message
+                    message: 'There is no domain title or session Id!'
                 });
             }
-            if (stderr) {
-                console.error(`Stderr: ${stderr}`);
+
+            const __dirname = path.resolve();
+            const title = req.body.title.trim(); // Ensure the title is sanitized
+            const sessionId = req.body.sessionId;
+            const sourcePath = path.resolve(__dirname, '../source/*');
+            const destinationPath = path.resolve(__dirname, `../../../${title}.${process.env.DIRECT_ADMIN_DOMAIN}/public_html/`);
+
+            // Create the required directory
+            const createMkDir = async () => {
+                const directoryPath = path.resolve(`../../domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
+                return new Promise((resolve, reject) => {
+                    fs.mkdir(directoryPath, { recursive: true }, (error) => {
+                        if (error) return reject(error);
+
+                        console.log('New Directory created successfully!');
+                        resolve(directoryPath);
+                    });
+                });
+            };
+            const sendRequest = async () => {
+                const agent = new https.Agent({ rejectUnauthorized: false });
+                const data = qs.stringify({
+                    subdomain: title,
+                    public_html: `/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}`,
+                    domain: process.env.DIRECT_ADMIN_DOMAIN,
+                    json: "yes",
+                    action: "document_root_override"
+                });
+
+                let config = {
+                  method: 'post',
+                  maxBodyLength: Infinity,
+                  url: `${process.env.DIRECT_ADMIN_URL}/CMD_SUBDOMAIN?json=yes`,
+                  headers: {
+                    'accept': 'application/json',
+                    'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'cookie': `session=${sessionId}`,
+                    'origin': process.env.DIRECT_ADMIN_URL,
+                    'priority': 'u=1, i',
+                    'referer': `${process.env.DIRECT_ADMIN_URL}/user/subdomains/${title}/document-root-override`,
+                    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'x-directadmin-session-id': sessionId,
+                    'x-json': 'yes'
+                  },
+                  data : data
+                };
+                try {
+                    const response = await axios.request(config);
+                    console.log('Request successfully sent:', response.data);
+                } catch (error) {
+                    console.error('Request error:', error);
+                    throw new Error('Failed to send request to the external API');
+                }
+            };
+
+
+            if (!fs.existsSync(destinationPath)) {
+                await createMkDir();
+                await sendRequest();
+                console.log('Destination path created:', destinationPath);
+            }
+
+            // Send the request to the external API
+
+
+            // Execute the copy command
+            const command = `cp -r ${sourcePath} ${destinationPath}`;
+
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return res.json({
+                        success: false,
+                        message: error.message
+                    });
+                }
+                if (stderr) {
+                    console.error(`Stderr: ${stderr}`);
+                    return res.json({
+                        success: false,
+                        message: stderr
+                    });
+                }
+                console.log('Copy successful:', stdout);
                 return res.json({
-                    success:false,
-                    message: stderr
+                    success: true,
+                    message: 'The content of the Website was taken'
                 });
-            }
-            return res.json({
-                success: true,
-                message: 'The content of the Website was taken'
             });
-        });
+        } catch (err) {
+            console.error('An error occurred:', err);
+            return res.json({
+                success: false,
+                message: err.message
+            });
+        }
 
     },
     yarnInstall: function (req, res, next) {
@@ -1761,19 +1825,17 @@ const self = {
           rejectUnauthorized: false,
         });
         let config = {
+          httpsAgent:agent,
           method: 'get',
           maxBodyLength: Infinity,
-          httpsAgent: agent,
-          url: `${process.env.DIRECT_ADMIN_URL}/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=nodeeweb.com&type=subdomain`,
+          url: `${process.env.DIRECT_ADMIN_URL}/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=${process.env.DIRECT_ADMIN_DOMAIN}&type=subdomain`,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
             'content-type': 'application/json',
-            'cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; 
-                _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect; 
-                session=${req.body.sessionId}`,
+            'cookie': `session=${req.body.sessionId}; session=${process.env.DIRECT_ADMIN_SESSION}`,
             'priority': 'u=1, i',
-            'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
+            'referer': 'https://194.48.198.197:2222/user/subdomains',
             'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
@@ -1781,7 +1843,7 @@ const self = {
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'x-directadmin-session-id': req.body.sessionId,
+            'x-directadmin-session-id': `${req.body.sessionId}`,
             'x-json': 'yes'
           }
         };

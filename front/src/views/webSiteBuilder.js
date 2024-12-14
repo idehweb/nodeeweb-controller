@@ -83,16 +83,21 @@ export default function webSiteBuilder() {
                     console.log('ressession aadmin', ressession)
                     if(ressession.success && ressession.sessionInfoAdmin){
                         let sessionIdAdmin = ressession.sessionInfoAdmin.sessionID
+                        let sessionId = res.sessionInfo.sessionID
                         console.log('user', user)
                         let obj = {
                             subdomain: user.webSite,
-                            sessionId: res.sessionInfo.sessionID
+                            sessionId: sessionId 
                         }
                         generateSubdomain(obj).then((r)=>{
                             if (r.success){
                                 // setLoaderMessage(t('domain of your website created!'));
                                 // setWaitingMessage(t('adding Contents ...'));
-                                getSource(user.webSite).then((res2) => {
+                                let sourceObj = {
+                                    title: user.webSite,
+                                    sessionId: sessionId,
+                                }
+                                getSource(sourceObj).then((res2) => {
                                     console.log('res2', res2)
                                     if(res2.success){
                                         // setLoaderMessage(t('Contents added to Websites!'));

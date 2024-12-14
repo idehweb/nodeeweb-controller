@@ -2133,9 +2133,9 @@ export const generateSubdomain = (obj) => {
       });
   });
 };
-export const getSource = (title) => {
+export const getSource = (objjj) => {
   return new Promise(function (resolve, reject) {
-    postData(`${ApiUrl}/customer/getSource`, {title}, true)
+    postData(`${ApiUrl}/customer/getSource`, objjj, true)
       .then((data) => {
         let mainD = data['data'];
         resolve(mainD);
