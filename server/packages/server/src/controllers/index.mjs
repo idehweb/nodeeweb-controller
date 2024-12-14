@@ -124,7 +124,7 @@ var self = (Model) => {
     function removeContent(title){
         return new Promise((resolve,reject)=>{
             const __dirname = path.resolve();
-            const targetPath = path.resolve(__dirname, `../../../${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
+            const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_DOMAIN}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
             if (!fs.existsSync(targetPath)) {
                 console.log('destinationPath: ', targetPath)
                     resolve({

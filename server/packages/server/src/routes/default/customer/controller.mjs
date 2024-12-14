@@ -1128,7 +1128,7 @@ const self = {
           },
           data : data
         };
-
+        console.log('config: ', config)
         axios.request(config)
         .then((response) => {
           console.log('subdomain created successfully!',JSON.stringify(response.data));
@@ -1160,7 +1160,7 @@ const self = {
             const title = req.body.title.trim(); // Ensure the title is sanitized
             const sessionId = req.body.sessionId;
             const sourcePath = path.resolve(__dirname, '../source/*');
-            const destinationPath = path.resolve(__dirname, `../../../${title}.${process.env.DIRECT_ADMIN_DOMAIN}/public_html/`);
+                const destinationPath = path.resolve(`/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/`);
 
             // Create the required directory
             const createMkDir = async () => {
@@ -1185,6 +1185,7 @@ const self = {
                 });
 
                 let config = {
+                  httpsAgent: agent,
                   method: 'post',
                   maxBodyLength: Infinity,
                   url: `${process.env.DIRECT_ADMIN_URL}/CMD_SUBDOMAIN?json=yes`,
@@ -1270,7 +1271,8 @@ const self = {
         const __dirname = path.resolve();
         // Assuming `req.body.title` is coming from an Express.js request
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
-        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+        const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/server`);
+
 
         // testing paths in local
         // const targetPath = path.resolve(__dirname, `tmpp/server/`);
@@ -1314,7 +1316,7 @@ const self = {
         }
         const __dirname = path.resolve();
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
-        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+        const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/server`);
 
         // testing paths in local
         // const targetPath = path.resolve(__dirname, `tmpp/server/`);
@@ -1413,7 +1415,7 @@ const self = {
 
         const __dirname = path.resolve();
 
-        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+        const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/server`);
 
         // testing for windows
         // const targetPath = path.resolve(__dirname, `tmpp/server/`);
@@ -1717,7 +1719,7 @@ const self = {
         const __dirname = path.resolve();
         // Assuming `req.body.title` is coming from an Express.js request
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
-        const targetPath = path.resolve(__dirname, `../../../${title}.nodeeweb.com/public_html/server`);
+        const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/server`);
 
         // testing paths in local
         // const targetPath = path.resolve(__dirname, `tmpp/server/`);
