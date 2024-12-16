@@ -64,6 +64,7 @@ var self = (Model) => {
     }
     function removeDomain(websites, sessionId) {
         return new Promise((resolve, reject)=>{
+            console.log(' removeDomain function ===>')
             if(!websites || websites.length < 1){
                 resolve({
                     success: false,
@@ -130,6 +131,7 @@ var self = (Model) => {
 
     async function removeContent(websites) {
         return new Promise((resolve, reject) => {
+            console.log('removeContent function ==>')
             if(!websites || websites.length < 1){
                 resolve({
                     success: false,
@@ -160,7 +162,7 @@ var self = (Model) => {
                         console.log('Error: dbPassword not found in .env.local');
                         resolve({ success: false, output: 'dbPassword not found' });
                     }
-
+                    console.log('dbPassword: ', dbPassword)
                     const mongoCommand = `mongo -u ${item.title} -p ${dbPassword} --port 2758 --authenticationDatabase ${item.title} --eval "db = db.getSiblingDB('${item.title}'); db.dropUser('${item.title}');"`;
                     exec(mongoCommand, (mongoError) => {
                         if (mongoError) {
@@ -195,14 +197,16 @@ var self = (Model) => {
     }
     function stopPm2(websites) {
         return new Promise((resolve, reject)=>{
+            console.log('stopPm2 function ==>')
             if(!websites || websites.length < 1){
                 resolve({
                     success: false,
                     message: 'there is no website to pm2 stop it'
                 })
             }
-            websites.foreach((item)=>{
-                const command = `pm2 stop ${itme.title} && pm2 delete ${item.title}`
+            console.log('websites: ', websites)
+            websites.forEach((item)=>{
+                const command = `pm2 stop ${item.title} && pm2 delete ${item.title}`
                 exec(command, (err, stdout) =>{
                     if (err || !stdout) {
                         console.log(`pm2 stopped ${item.title} successfully`)
@@ -215,7 +219,7 @@ var self = (Model) => {
                 })
 
             })
-            resole({
+            resolve({
                 success: true,
                 message: "pm2 stopped and deleted successfully!"
             })
@@ -224,6 +228,7 @@ var self = (Model) => {
     }
     async function deleteFromCDN (websites) {
         return new Promise((resolve,reject) =>{
+            console.log(" deleteFromCDN function ==>")
             console.log('websites for deleting from cdn: ', websites)
             // Validate request input
             if (!websites) {
@@ -544,8 +549,8 @@ var self = (Model) => {
                         });
                     }
 
-                    if (customer.webSite) {
-                        console.log(`Customer has a website with domain: ${customer.webSite}`);
+                    if (customer.webSite.length > 0) {
+                        console.log(`Customer has website with domain: ${customer.webSite}`);
                         const websites = customer.webSite;
 
                         // Get session ID
@@ -560,13 +565,15 @@ var self = (Model) => {
 
                         const sessionId = sessionResponse.response?.sessionID;
 
+                        const removeDomainResponse = await removeDomain(websites, sessionId);
+
+
                         if (!removeDomainResponse.success){                            return res.json({
                                 success: false,
                                 message: 'Error in removing domain'
                             });
                         }
                         // Remove domain
-                        const removeDomainResponse = await removeDomain(websites, sessionId);
 
                         const deleteFromCDNResponse = await deleteFromCDN(websites);
 

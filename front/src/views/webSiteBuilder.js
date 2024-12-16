@@ -130,7 +130,6 @@ export default function webSiteBuilder() {
                                                                         // setWaitingMessage(t('configurating http ...'));
                                                                         let httpObj = {
                                                                             title:websiteTitle,
-                                                                            port: r6.customer.port,
                                                                             sessionId: sessionIdAdmin
                                                                         }
                                                                         httpConfig(httpObj).then((r7) => {

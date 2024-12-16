@@ -1473,64 +1473,70 @@ const self = {
   -e "s|NODE_ENV=.*|NODE_ENV=production|" .env.local
 `
             //testing command for windows
-
-            Customer.findOneAndUpdate(
-                {
-                    _id: req.body._id,
-                },
-                {port: port},
-
-                {
-                    new: true,
-                    projection: {
-                        _id: 1,
-                        email: 1,
-                        nickname: 1,
-                        firstName: 1,
-                        lastName: 1,
-                        webSite: 1,
-                        port: 1,
-                        internationalCode: 1,
-                        address: 1,
-                    },
-                },
-                function (err, customer) {
-                    // console.log('==> pushSalonPhotos() got response');
-
-                    if (err || !customer) {
-                        // console.log('==> pushSalonPhotos() got response err');
-
+            Customer.findById(
+                req.body._id,
+                'webSite name',
+                function (err, customer){
+                    if (err || !customer.webSite){
                         return res.json({
-                            err: err,
-                            success: false,
-                            message: 'error',
-                        });
+                            success:false,
+                            message:"error in finding customer"
+                        })
+                    } else{
+                        customer.webSite.forEach((item) =>{
+                            if (item.title === req.body.title){
+                                item.port = port
+                            }
+                        })
+                        Customer.findByIdAndUpdate(
+                            req.body._id,
+                            {
+                                $set: {
+                                    webSite: customer.webSite
+                                }
+                            },
+                            function (err, customer) {
+                                // console.log('==> pushSalonPhotos() got response');
+
+                                if (err || !customer) {
+                                    // console.log('==> pushSalonPhotos() got response err');
+
+                                    return res.json({
+                                        err: err,
+                                        success: false,
+                                        message: 'error',
+                                    });
+                                }
+
+                                exec(command, (error, stdout, stderr) => {
+                                    if(error){
+                                        console.error(`Error: ${error.message}`);
+                                        return res.json({
+                                            success: false,
+                                            message: error.message
+                                        });
+                                    }
+                                    if (stderr) {
+                                        console.error(`Stderr: ${stderr}`);
+                                        return res.json({
+                                            success: false,
+                                            message: stderr
+                                        });
+                                    }
+                                    console.log('command is run, ', stdout)
+
+                                })
+
+                            }
+                        );
                     }
-
-                    exec(command, (error, stdout, stderr) => {
-                        if(error){
-                            console.error(`Error: ${error.message}`);
-                            return res.json({
-                                success: false,
-                                message: error.message
-                            });
-                        }
-                        if (stderr) {
-                            console.error(`Stderr: ${stderr}`);
-                            return res.json({
-                                success: false,
-                                message: stderr
-                            });
-                        }
-                        return res.json({
-                            success: true,
-                            message: `.env.local configuration updated with port ${port}`,
-                            customer:customer,
-                        });
-                    })
-
                 }
-            );
+            )
+
+            return res.json({
+                success: true,
+                message: `.env.local configuration updated with port ${port}`,
+            });
 
         }).catch((err) => {
             console.error('Error getting available port:', err);
@@ -1557,7 +1563,7 @@ const self = {
                 const Customer = req.mongoose.model('Customer');
                 const customers = await Customer.find(
                     {},
-                    '_id firstName lastName webSite port active source email phoneNumber activationCode credit customerGroup createdAt updatedAt status companyTelNumber companyName'
+                    '_id webSite phoneNumber'
                 ).exec();
 
                 if (!customers || customers.length === 0) {
@@ -1565,7 +1571,7 @@ const self = {
                     return [];
                 }
 
-                return customers.filter(item => item.port && item.webSite);
+                return customers.filter(item => item.webSite);
             } catch (error) {
                 console.error('Error fetching customers:', error);
                 throw error;
@@ -1597,15 +1603,23 @@ const self = {
 
             if (customerSites.length > 0) {
                 customerSites.forEach(item => {
-                    data.custom4 += `|*if SUB="${item.webSite.title}"|
-                ProxyRequests Off
-                RewriteEngine on
-                ProxyPreserveHost on
-                ProxyPass / http://${process.env.DIRECT_ADMIN_IP}:${item.port}/
-                ProxyPassReverse / http://${process.env.DIRECT_ADMIN_IP}:${item.port}/
-    |*endif|
-    `;
+                    if(item.webSite.length > 0 ){
+                        item.webSite.forEach(trackItem => {
+                            if(trackItem.title && trackItem.port){
+                                data.custom4 += `|*if SUB="${trackItem.title}"|
+                        ProxyRequests Off
+                        RewriteEngine on
+                        ProxyPreserveHost on
+                        ProxyPass / http://${process.env.DIRECT_ADMIN_IP}:${trackItem.port}/
+                        ProxyPassReverse / http://${process.env.DIRECT_ADMIN_IP}:${trackItem.port}/
+            |*endif|
+            `;
+                            }
+                        })
+
+                    }
                 });
+                console.log('data custom4: ', data.custom4)
             }
 
             // Configure HTTPS agent
