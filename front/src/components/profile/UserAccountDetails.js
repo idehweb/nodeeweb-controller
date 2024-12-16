@@ -151,7 +151,9 @@ export default function UserAccountDetails({ title }) {
                     <label htmlFor="feLastName">{t('phone number')}: {phoneNumber}</label>
                   </Col>
                   <Col md="6" className="form-group">
-                    <label htmlFor="feLastName">{t('Website')}: {webSite}.nodeeweb.com</label>
+                    <label htmlFor="feLastName">{t('Website')}: {webSite.map((item) => {
+                      return (`${item.title}.nodeeweb.com`)
+                    })}</label>
                   </Col>
                 </Row>}
                   {registerExtraFields && <Row>{registerExtraFields.map((item)=>{
@@ -251,20 +253,20 @@ export default function UserAccountDetails({ title }) {
                       }}
                     />
                   </Col>
-                  <Col md="6" className="form-group">
+                  {/* <Col md="6" className="form-group">
                     <label htmlFor="feLastName">{t('Website')}</label>
                     <FormInput
                       placeholder={t('Website')}
-                      value={`${webSite}.nodeeweb.com`}
+                      value={`${webSite?.title}.nodeeweb.com`}
                       disabled
                       onChange={(e) => {
                         setState({
                           ...state,
-                          webSite: e.target.value,
+                          webSite: {e.target.value},
                         });
                       }}
                     />
-                  </Col>
+                  </Col> */}
                 </Row>
 
                   <Row form className={'row'}>

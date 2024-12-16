@@ -62,186 +62,234 @@ var self = (Model) => {
         })
 
     }
-    function removeDomain(domain, sessionId) {
+    function removeDomain(websites, sessionId) {
         return new Promise((resolve, reject)=>{
-            let data = JSON.stringify({
-              "select0": domain,
-              "domain": process.env.DIRECT_ADMIN_DOMAIN,
-              "json": "yes",
-              "action": "delete",
-              "contents": "no"
-            });
-            const agent = new https.Agent({
-              rejectUnauthorized: false,
-            });
-            let config = {
-              method: 'post',
-              maxBodyLength: Infinity,
-              httpsAgent: agent,
-              url: `${process.env.DIRECT_ADMIN_URL}/CMD_SUBDOMAIN?json=yes`,
-              headers: {
-                'accept': 'application/json',
-                'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
-                'content-type': 'application/json',
-                'cookie': `session=${sessionId}`,
-                'origin': process.env.DIRECT_ADMIN_URL,
-                'priority': 'u=1, i',
-                'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
-                'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                'x-directadmin-session-id': sessionId,
-                'x-json': 'yes'
-              },
-              data : data
-            };
+            if(!websites || websites.length < 1){
+                resolve({
+                    success: false,
+                    message: "there is no website to delete its domain"
+                })
+            }
+            websites.map((item) =>{
+                let data = JSON.stringify({
+                  "select0": item.title,
+                  "domain": process.env.DIRECT_ADMIN_DOMAIN,
+                  "json": "yes",
+                  "action": "delete",
+                  "contents": "no"
+                });
+                const agent = new https.Agent({
+                  rejectUnauthorized: false,
+                });
+                let config = {
+                  method: 'post',
+                  maxBodyLength: Infinity,
+                  httpsAgent: agent,
+                  url: `${process.env.DIRECT_ADMIN_URL}/CMD_SUBDOMAIN?json=yes`,
+                  headers: {
+                    'accept': 'application/json',
+                    'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                    'content-type': 'application/json',
+                    'cookie': `session=${sessionId}`,
+                    'origin': process.env.DIRECT_ADMIN_URL,
+                    'priority': 'u=1, i',
+                    'referer': `${process.env.DIRECT_ADMIN_URL}/evo/user/subdomains`,
+                    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'x-directadmin-session-id': sessionId,
+                    'x-json': 'yes'
+                  },
+                  data : data
+                };
+                axios.request(config)
+                .then((response) => {
+                  console.log(`website domain with title ${item.title} deleted successfully`);
+                })
+                .catch((error) => {
+                  console.log(`error removing domain ${item.title}`, error);
+                    resolve({
+                        "success": false,
+                        "message": error
+                    })
+                });
 
-            axios.request(config)
-            .then((response) => {
-              console.log('removing is successfully',JSON.stringify(response.data));
-              const resData = response.data
-                console.log('response json', resData)
-                resolve({
-                    "success": true,
-                    "response": resData
-                })
             })
-            .catch((error) => {
-              console.log("error removing domain", error);
-                resolve({
-                    "success": false,
-                    "message": error
-                })
-            });
+            resolve({
+                "success": true,
+                "message": "domains deleted successfully"
+            })
+
         })
 
     }
 
-    async function removeContent(title) {
+    async function removeContent(websites) {
         return new Promise((resolve, reject) => {
-            const targetPath = path.join('/home', process.env.DIRECT_ADMIN_USERNAME, 'domains', `${title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
-
-            if (!fs.existsSync(targetPath)) {
-                console.log('destinationPath: ', targetPath);
-                return resolve({
+            if(!websites || websites.length < 1){
+                resolve({
                     success: false,
-                    output: 'Website directory does not exist!'
-                });
+                    message: "there is no websites to clear their contents"
+                })
             }
-
-            const envModulePath = path.join(targetPath, 'server', '.env.local');
-            fs.readFile(envModulePath, 'utf-8', (err, data) => {
-                if (err) {
-                    console.log('Error reading .env.local: ', err);
-                    return resolve({ success: false, output: err.message });
+            websites.map((item) => {
+                const targetPath = path.join('/home', process.env.DIRECT_ADMIN_USERNAME, 'domains', `${item.title}.${process.env.DIRECT_ADMIN_DOMAIN}`);
+                if (!fs.existsSync(targetPath)) {
+                    console.log('destinationPath: ', targetPath);
+                    return resolve({
+                        success: false,
+                        output: `Website directory for this domain: ${item.title} does not exist!`
+                    });
                 }
-
-                console.log('data: ', data);
-                const envData = data.split('\n').find(line => line.startsWith('dbPassword='));
-                const dbPassword = envData ? envData.split('=')[1] : null;
-
-                if (!dbPassword) {
-                    console.log('Error: dbPassword not found in .env.local');
-                    return resolve({ success: false, output: 'dbPassword not found' });
-                }
-
-                const mongoCommand = `mongo -u ${title} -p ${dbPassword} --port 2758 --authenticationDatabase ${title} --eval "db = db.getSiblingDB('${title}'); db.dropUser('${title}');"`;
-                exec(mongoCommand, (mongoError) => {
-                    if (mongoError) {
-                        console.log('Error in mongo shell command: ', mongoError);
-                        return resolve({ success: false, output: mongoError.message });
+                const envModulePath = path.join(targetPath, 'server', '.env.local');
+                fs.readFile(envModulePath, 'utf-8', (err, data) => {
+                    if (err) {
+                        console.log('Error reading .env.local: ', err);
+                        resolve({ success: false, output: err.message });
                     }
 
-                    console.log('MongoDB user removed successfully!');
+                    console.log('data: ', data);
+                    const envData = data.split('\n').find(line => line.startsWith('dbPassword='));
+                    const dbPassword = envData ? envData.split('=')[1] : null;
 
-                    // After successfully executing the MongoDB command, remove the directory
-                    const command = `rm -r ${targetPath}`;
-                    console.log('Command for removing content: ', command);
+                    if (!dbPassword) {
+                        console.log('Error: dbPassword not found in .env.local');
+                        resolve({ success: false, output: 'dbPassword not found' });
+                    }
 
-                    exec(command, (error) => {
-                        if (error) {
-                            console.log('Error clearing content: ', error);
-                            return resolve({ success: false, output: error.message });
+                    const mongoCommand = `mongo -u ${item.title} -p ${dbPassword} --port 2758 --authenticationDatabase ${item.title} --eval "db = db.getSiblingDB('${item.title}'); db.dropUser('${item.title}');"`;
+                    exec(mongoCommand, (mongoError) => {
+                        if (mongoError) {
+                            console.log('Error in mongo shell command: ', mongoError);
+                            resolve({ success: false, output: mongoError.message });
                         }
 
-                        console.log('Content of website deleted successfully!');
-                        return resolve({
-                            success: true,
-                            message: 'Content of website deleted successfully!'
+                        console.log('MongoDB user removed successfully!');
+
+                        // After successfully executing the MongoDB command, remove the directory
+                        const command = `rm -r ${targetPath}`;
+                        console.log('Command for removing content: ', command);
+
+                        exec(command, (error) => {
+                            if (error) {
+                                console.log('Error clearing content: ', error);
+                                return resolve({ success: false, output: error.message });
+                            }
+
+                            console.log(`Content of website with this domain ${item.title} deleted successfully!`);
+
                         });
                     });
                 });
+            })
+            return resolve({
+                success: true,
+                message: 'Content of website deleted successfully!'
             });
+
         });
     }
-    function stopPm2(title) {
+    function stopPm2(websites) {
         return new Promise((resolve, reject)=>{
-            const __dirname = path.resolve()
-            const command = `pm2 stop ${title} && pm2 delete ${title}`
-            exec(command, (err, stdout) =>{
-                if (err || !stdout) {
-                    resolve({
-                        "success": false,
-                        "message": "error in deleting pm2 process!"
-                    })
-                } else {
-                    resolve({
-                        "success": true,
-                        "message": "pm2 stopped and deleted successfully!"
-                    })
-                }
+            if(!websites || websites.length < 1){
+                resolve({
+                    success: false,
+                    message: 'there is no website to pm2 stop it'
+                })
+            }
+            websites.foreach((item)=>{
+                const command = `pm2 stop ${itme.title} && pm2 delete ${item.title}`
+                exec(command, (err, stdout) =>{
+                    if (err || !stdout) {
+                        console.log(`pm2 stopped ${item.title} successfully`)
+                    } else {
+                        resolve({
+                            "success": false,
+                            "message": `something is wrong with pm2 stopping ${item.title}`
+                        })
+                    }
+                })
+
+            })
+            resole({
+                success: true,
+                message: "pm2 stopped and deleted successfully!"
             })
         })
 
     }
-    async function deleteFromCDN (title) {
+    async function deleteFromCDN (websites) {
         return new Promise((resolve,reject) =>{
-            console.log('title for saving in cdn: ', title)
+            console.log('websites for deleting from cdn: ', websites)
             // Validate request input
-            if (!title) {
+            if (!websites) {
                 resolve({
                     success: false,
-                    message: 'There is no domain!'
+                    message: 'There is no websites for deleting from CDN!'
                 });
             }
 
             let data = JSON.stringify({
               "message": "string"
             });
+            websites.forEach((item) => {
+                if(item._id){
+                    try{
+                        let config = {
+                          method: 'delete',
+                          maxBodyLength: Infinity,
+                          url: `https://napi.arvancloud.ir/cdn/4.0/domains/${process.env.DIRECT_ADMIN_DOMAIN}/dns-records/${item._id}`,
+                          headers: {
+                            'authority': 'napi.arvancloud.ir',
+                            'accept': 'application/json, text/plain, */*',
+                            'authorization': process.env.ARVAND_CLOUD_API_KEY,
+                            'cache-control': 'no-cache',
+                            'content-type': 'application/json'
+                          },
+                          data : data
+                        };
+                        axios.request(config)
+                            .then((response) =>{
+                                console.log(`dns record with title ${item.title} successfully deleted!`)
+                            }).catch((err) =>{
+                                console.log(`error in deleting process with title ${item.title}`)
+                                resolve({
+                                    success: false,
+                                    message: "error in deleting process with title ${item.title}"
+                                })
+                        })
 
-            let config = {
-              method: 'delete',
-              maxBodyLength: Infinity,
-              url: `https://napi.arvancloud.ir/cdn/4.0/domains/${process.env.DIRECT_ADMIN_DOMAIN}/dns-records/id`,
-              headers: {
-                'authority': 'napi.arvancloud.ir',
-                'accept': 'application/json, text/plain, */*',
-                'authorization': process.env.ARVAND_CLOUD_API_KEY,
-                'cache-control': 'no-cache',
-                'content-type': 'application/json'
-              },
-              data : data
-            };
-
-            axios.request(config)
-            .then((response) => {
-              console.log('true: ',JSON.stringify(response.data));
+                    } catch (err){
+                        resolve({
+                            success: false,
+                            message: 'error in process of deleting from CDN!'
+                        })
+                    }
+                }
+            })
               resolve({
                   "success": true,
-                  "message": "domain saved in CDN successfully"
+                  "message": "websites deleted from CDN successfully"
               })
-            })
-            .catch((error) => {
-              console.log('false: ',error);
-              resolve({
-                  "success": false,
-                  "error": error
-              })
-            });
+            // axios.request(config)
+            // .then((response) => {
+            //   console.log('true: ',JSON.stringify(response.data));
+            //   resolve({
+            //       "success": true,
+            //       "message": "domain saved in CDN successfully"
+            //   })
+            // })
+            // .catch((error) => {
+            //   console.log('false: ',error);
+            //   resolve({
+            //       "success": false,
+            //       "error": error
+            //   })
+            // });
 
         })
 
@@ -498,7 +546,7 @@ var self = (Model) => {
 
                     if (customer.webSite) {
                         console.log(`Customer has a website with domain: ${customer.webSite}`);
-                        const domain = customer.webSite;
+                        const websites = customer.webSite;
 
                         // Get session ID
                         const sessionResponse = await getSession();
@@ -512,24 +560,41 @@ var self = (Model) => {
 
                         const sessionId = sessionResponse.response?.sessionID;
 
+                        if (!removeDomainResponse.success){                            return res.json({
+                                success: false,
+                                message: 'Error in removing domain'
+                            });
+                        }
                         // Remove domain
-                        const removeDomainResponse = await removeDomain(domain, sessionId);
+                        const removeDomainResponse = await removeDomain(websites, sessionId);
 
-                        // if (!removeDomainResponse.success){                            return res.json({
-                        //         success: false,
-                        //         message: 'Error in removing domain'
-                        //     });
-                        // }
+                        const deleteFromCDNResponse = await deleteFromCDN(websites);
+
+                        if (!deleteFromCDNResponse.success){                            return res.json({
+                                success: false,
+                                message: 'Error in removing domain'
+                            });
+                        }
+
 
                         console.log('Domain deleted successfully!');
 
                         // Remove content from the website
-                        const removeContentResponse = await removeContent(domain);
+                        const removeContentResponse = await removeContent(websites);
 
                         if (!removeContentResponse.success) {
                             return res.json({
                                 success: false,
                                 message: `Error in clearing content of website ,${removeContentResponse.output}`
+                            });
+                        }
+
+                        const pm2Process = await stopPm2(websites);
+
+                        if (!pm2Process.success) {
+                            return res.json({
+                                success: false,
+                                message: `Error in stopping pm2 ,${pm2Process.message}`
                             });
                         }
 
