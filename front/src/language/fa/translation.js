@@ -403,6 +403,7 @@ export default () => ({
   'activate seller': 'فعالسازی فروش',
   'Send sms': 'ارسال اس ام اس',
   'Your first name': 'نام شما',
+  'Add Website': 'اضافه کردن وبسایت',
   'First name': 'نام',
   'Last name': 'نام خانوادگی',
   'Your last name': 'نام خانوادگی شما',

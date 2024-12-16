@@ -145,17 +145,31 @@ export default function UserAccountDetails({ title }) {
 
                   </Col>}
                 </Row>}
-                  {(phoneNumber || webSite) && <Row form className={'row'}>
-                  {/* Password */}
-                  <Col md="6" className="form-group">
-                    <label htmlFor="feLastName">{t('phone number')}: {phoneNumber}</label>
-                  </Col>
-                  <Col md="6" className="form-group">
-                    <label htmlFor="feLastName">{t('Website')}: {webSite.map((item) => {
-                      return (`${item.title}.nodeeweb.com`)
-                    })}</label>
-                  </Col>
-                </Row>}
+                {(phoneNumber || webSite) && (
+                <Row form className="row">
+                  {/* Phone Number */}
+                  {phoneNumber && (
+                    <Col md="6" className="form-group">
+                      <label htmlFor="fePhoneNumber">
+                        {t('phone number')}: {phoneNumber}
+                      </label>
+                    </Col>
+                  )}
+
+                  {/* Website */}
+                  {webSite?.length > 0 && (
+                    <Col md="6" className="form-group">
+                      <label htmlFor="feWebsite">
+                        {t('Website')}:{' '}
+                        {webSite.map((item, index) => (
+                          <span key={index}>{`${item.title}.nodeeweb.com`}</span>
+                        ))}
+                      </label>
+                    </Col>
+                  )}
+                </Row>
+                )}
+
                   {registerExtraFields && <Row>{registerExtraFields.map((item)=>{
                       if(item?.name!='internationalCode')
                         return <Col md="6" className="form-group">
@@ -253,20 +267,65 @@ export default function UserAccountDetails({ title }) {
                       }}
                     />
                   </Col>
-                  {/* <Col md="6" className="form-group">
-                    <label htmlFor="feLastName">{t('Website')}</label>
-                    <FormInput
-                      placeholder={t('Website')}
-                      value={`${webSite?.title}.nodeeweb.com`}
-                      disabled
-                      onChange={(e) => {
-                        setState({
-                          ...state,
-                          webSite: {e.target.value},
-                        });
-                      }}
-                    />
-                  </Col> */}
+                  {webSite.length > 0 && (
+                    <Col md="6" className="form-group">
+                      <label htmlFor="feWebsite">{t('Website')}</label>
+                      <FormInput
+                        placeholder={t('Website')}
+                        value={`${webSite.title}.nodeeweb.com`}
+                        disabled
+                        onChange={(e) => {
+                          setState({
+                            ...state,
+                            webSite: { ...webSite, title: e.target.value }, // Ensure the website state structure is preserved
+                          });
+                        }}
+                      />
+                    </Col>
+                  )}
+
+<Col md="12" className="form-group">
+  <button
+    type="button"
+    className="btn btn-primary"
+    onClick={() => setState({ ...state, addingWebsite: true })}
+  >
+    {t('Add Website')}
+  </button>
+</Col>
+
+{/* Website Submission Form */}
+{state.addingWebsite && (
+  <Col md="12" className="form-group">
+    <label htmlFor="newWebsite">{t('Enter Website')}</label>
+    <FormInput
+      id="newWebsite"
+      placeholder={t('Website')}
+      value={state.newWebsite || ''}
+      onChange={(e) => setState({ ...state, newWebsite: e.target.value })}
+    />
+    <button
+      type="button"
+      className="btn btn-success mt-2"
+      onClick={() => {
+        // Add new website to the list
+        setState({
+          ...state,
+          webSite: [
+            ...(state.webSite || []),
+            { title: state.newWebsite.trim() },
+          ],
+          newWebsite: '',
+          addingWebsite: false,
+        });
+      }}
+      disabled={!state.newWebsite?.trim()}
+    >
+      {t('Submit Website')}
+    </button>
+  </Col>
+)}
+
                 </Row>
 
                   <Row form className={'row'}>
