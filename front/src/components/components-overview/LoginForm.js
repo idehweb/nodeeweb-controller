@@ -63,7 +63,7 @@ class LoginForm extends Component {
       countryCode: st.countryCode,
       getPassword: false,
       firstName: st.user.firstName,
-      webSite: st.user.webSite.title,
+      webSite: st.user.webSite,
       lastName: st.user.lastName,
       passwordAuthentication: st?.themeData?.passwordAuthentication,
       registerExtraFields: st?.themeData?.registerExtraFields,
@@ -418,8 +418,8 @@ class LoginForm extends Component {
       password,
     });
     // return;
-    if(webSite){
-      checkDomainIsAvailable({title: webSite, sessionId:sessionId}).then((r)=>{
+    if(webSite?.title){
+      checkDomainIsAvailable({webSite: webSite, sessionId:sessionId}).then((r)=>{
         if(r.success){
           if(r.message.error){
             toast.error(t('website already exist!'))
@@ -867,11 +867,11 @@ class LoginForm extends Component {
                         <FormInput
                           placeholder={t('Website')}
                           type="text"
-                          value={webSite}
+                          value={webSite?.title}
                           id="ollastname"
                           dir="rtl"
                           onChange={(e) =>
-                            this.setState({webSite: e.target.value})
+                            this.setState({webSite:{title: e.target.value}})
                           }
                         />
                       </InputGroup>

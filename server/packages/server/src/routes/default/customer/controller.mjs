@@ -9,7 +9,6 @@ import path from "path";
 import fs, {exists, promises} from 'fs';
 import crypto from 'crypto';
 import qs from 'qs'
-import mongoose from 'mongoose'
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1029,8 +1028,11 @@ const self = {
             if (req.body.firstName) {
                 obj['firstName'] = req.body.firstName;
             }
+            if (!obj.webSite) {
+                obj.webSite = []; // Initialize webSite as an array if it doesn't exist
+            }
             if (req.body.webSite) {
-                obj['webSite'] = req.body.webSite;
+                obj.webSite.push(req.body.webSite); // Push the new value into the webSite array
             }
             if (req.body.lastName) {
                 obj['lastName'] = req.body.lastName;
@@ -1755,11 +1757,12 @@ const self = {
 
     },
     saveToCDN: async function (req, res, next) {
-        const Customer = mongoose.model('customer')
-        const { title , _id} = req.body;
+        const Customer = req.mongoose.model('Customer');
+        const { title , customerId} = req.body;
         console.log('title for saving in cdn: ', title)
+        console.log('customerId: ', customerId)
         // Validate request input
-        if (!title || !_id) {
+        if (!title || !customerId) {
             return res.json({
                 success: false,
                 message: 'There is no domain or _id!'
@@ -1802,11 +1805,9 @@ const self = {
 
         axios.request(config)
         .then((response) => {
-            console.log('true: ',response.data);
-            Customer.findOneAndUpdate({_id: _id} ,
-                {webSite:{
-                    _id: response.data.id
-                    }},
+            console.log('saved successfully with id: ',response.data.data.id);
+            Customer.findById( customerId ,
+                '_id webSite',
                 (err, customer)=> {
                 if(err){
                     console.log('error in finding customer')
@@ -1815,13 +1816,40 @@ const self = {
                           "message": "error in updating customer webSite"
                       })
                 }else {
-                    console.log('customer updated: ', customer)
-                    return res.json({
-                      "success": true,
-                      "message": "domain saved in CDN successfully"
+                    if(!customer.webSite){
+                        customer.webSite=[]
+                    }
+                    customer.webSite.forEach((item) => {
+                        if( item.title == title){
+                            item._id = response.data.data.id
+                        }
                     })
+                        console.log('customer::', customer.webSite)
+                        console.log('updated Website: ', customer.webSite)
+                        Customer.findByIdAndUpdate( customerId ,
+                         {
+                             $set:{
+                                 webSite: customer.webSite
+                             }
+                         },
+                        (err, customer)=> {
+                            if (err){
+                                return res.json({
+                                  "success": false,
+                                  "message": "error in updating customer webSite"
+                                })
+                            } else{
+                                console.log('customer updated: ', customer)
+                                return res.json({
+                                    "success": true,
+                                    "message": "domain saved in CDN successfully"
+                                })
+                            }
+
+                        });
                 }
             })
+
         })
         .catch((error) => {
           console.log('false: ',error);
@@ -1835,11 +1863,11 @@ const self = {
     },
 
     domainIsExist: function (req, res, next) {
-        if (!req.body.title || !req.body.sessionId){
+        if (!req.body.webSite || !req.body.sessionId){
             console.log('req.body', req.body)
             res.json({
                 success:false,
-                message: 'there is no sessionId or title!'
+                message: 'there is no sessionId or webSite!'
             })
         }
         const agent = new https.Agent({
@@ -1849,7 +1877,7 @@ const self = {
           httpsAgent:agent,
           method: 'get',
           maxBodyLength: Infinity,
-          url: `${process.env.DIRECT_ADMIN_URL}/CMD_JSON_VALIDATE?json=yes&value=${req.body.title}&domain=${process.env.DIRECT_ADMIN_DOMAIN}&type=subdomain`,
+          url: `${process.env.DIRECT_ADMIN_URL}/CMD_JSON_VALIDATE?json=yes&value=${req.body.webSite.title}&domain=${process.env.DIRECT_ADMIN_DOMAIN}&type=subdomain`,
           headers: {
             'accept': 'application/json',
             'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',

@@ -5,11 +5,11 @@
 
 //local development
 
-window.BASE_URL = 'http://localhost:3002';
-window.ADMIN_URL = 'http://localhost:3002';
-window.ADMIN_ROUTE = 'http://localhost:3002/admin';
-window.SHOP_URL = 'http://localhost:3002/';
-window.THEME_URL = 'http://localhost:3002/theme';
+// window.BASE_URL = 'http://localhost:3002';
+// window.ADMIN_URL = 'http://localhost:3002';
+// window.ADMIN_ROUTE = 'http://localhost:3002/admin';
+// window.SHOP_URL = 'http://localhost:3002/';
+// window.THEME_URL = 'http://localhost:3002/theme';
 
 //production
 
@@ -59,6 +59,12 @@ window.THEME_URL = 'http://localhost:3002/theme';
 // window.ADMIN_ROUTE = 'https://gameboss.shop/admin';
 // window.SHOP_URL = 'https://gameboss.shop/';
 // window.THEME_URL = 'https://gameboss.shop/theme';
+
+window.BASE_URL = 'https://nodeeweb.com';
+window.ADMIN_URL = 'https://nodeeweb.com';
+window.ADMIN_ROUTE = 'https://nodeeweb.com/admin';
+window.SHOP_URL = 'https://nodeeweb.com/';
+window.THEME_URL = 'https://nodeeweb.com/theme';
 
 // window.BASE_URL = 'https://aranonline.shop';
 // window.ADMIN_URL = 'https://aranonline.shop';

@@ -76,12 +76,16 @@ export default function webSiteBuilder() {
         return () => clearInterval(interval);
       }, [textArray, currentIndex]);
     let {user} = store.getState().store;
-    if(user.webSite){
-        setWebsiteTitle(user.webSite?.title)
-        setWebsiteId(user.webSite?._id)
-    }
+    console.log(' user : ', user)
     useEffect(() => {
-        console.log('get session info from direct admin ...')
+        if (user.webSite && user.webSite.length > 0) {
+            console.log('Setting websiteTitle with:', user.webSite[0].title);
+            setWebsiteTitle(user.webSite[0].title);
+        }
+    }, [user.webSite]);
+    useEffect(() => {
+        if (!websiteTitle) return;
+        console.log('get session info from direct admin ...', websiteTitle)
         getSessionInfo().then((res)=> {
             console.log('get sessionId', res)
             if( res.success && res.sessionInfo){
@@ -224,7 +228,7 @@ export default function webSiteBuilder() {
             console.log('error', err)
             setLoader(false)
         });
-    }, [])
+    }, [websiteTitle])
 
     const location = useLocation();
     let { hash = 'profile' } = location;
