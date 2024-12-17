@@ -53,6 +53,8 @@ export default function webSiteBuilder() {
         t('adding db ...'), t('setting up ...'), t('configurating http ...'), t('building Settings ...'),
         t('saving domain in CDN ...')
     ])
+
+ 
     const loader2 = (
         <div className="loadNotFound loader" style={{display: 'inline-block'}}>
           <p>{t(waitingMessage)}</p>
@@ -78,7 +80,10 @@ export default function webSiteBuilder() {
     let {user} = store.getState().store;
     console.log(' user : ', user)
     useEffect(() => {
-        if (user.webSite && user.webSite.length > 0) {
+        if(newDomain){
+            console.log('new domain recieved: ', newDomain)
+            setWebsiteTitle(newDomain);
+        }else if (user.webSite && user.webSite.length > 0) {
             console.log('Setting websiteTitle with:', user.webSite[0].title);
             setWebsiteTitle(user.webSite[0].title);
         }
@@ -230,6 +235,8 @@ export default function webSiteBuilder() {
     }, [websiteTitle])
 
     const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const newDomain = params.get('newDomain');
     let { hash = 'profile' } = location;
     const [tab, setTab] = useState(() => hash.replace('#', '') || 'profile');
     const token = localStorage.getItem('token')

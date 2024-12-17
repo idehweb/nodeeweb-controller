@@ -266,6 +266,7 @@ class LoginForm extends Component {
       lastName,
       email,
       registerExtraFields,
+      userWasInDbBefore,
       webSite,
       password,
       extraFields,
@@ -303,12 +304,12 @@ class LoginForm extends Component {
       });
       return;
     }
-    if (!webSite || webSite == '') {
-      toast(t('fill everything!'), {
-        type: 'error',
-      });
-      return;
-    }
+    // if (!webSite || webSite == '') {
+    //   toast(t('fill everything!'), {
+    //     type: 'error',
+    //   });
+    //   return;
+    // }
     if (this.state.passwordAuthentication)
       if (!password || password == undefined || password == '') {
         console.log('password', password, !password);
@@ -418,7 +419,7 @@ class LoginForm extends Component {
       password,
     });
     // return;
-    if(webSite?.title){
+    if(webSite?.title && !userWasInDbBefore){
       checkDomainIsAvailable({webSite: webSite, sessionId:sessionId}).then((r)=>{
         if(r.success){
           if(r.message.error){
@@ -448,6 +449,28 @@ class LoginForm extends Component {
           }
         }
       })
+    } else if(userWasInDbBefore){
+      console.log('user was in db before')
+      setPassWithPhoneNumber({
+        phoneNumber: fd + phoneNumber,
+        firstName,
+        lastName,
+        address:addres,
+        email,
+        data: extraFields,
+        internationalCode,
+        password,
+      }).then((res) => {
+        console.log(' res after setpassword', res)
+        if (res.success) {
+          this.setState({
+            // token: res.token,
+            setPassword: false,
+            goToProfile: true,
+            // goToProfile: true,
+          });
+        }
+      });
     }
 
   };
@@ -505,6 +528,7 @@ class LoginForm extends Component {
             enterActivationCodeMode: false,
             setPassword: true,
             firstName: res?.firstName,
+            webSite: res?.webSite,
             lastName: res?.lastName
           });
 
@@ -568,6 +592,7 @@ class LoginForm extends Component {
       internationalCode,
       enterActivationCodeMode,
       internationalCodeClass,
+      userWasInDbBefore,
       goToCheckout,
       webSite,
       goToChat,
@@ -860,7 +885,7 @@ class LoginForm extends Component {
                         />
                       </InputGroup>
                     </Col>
-                    <Col md="12" className="form-group">
+{!userWasInDbBefore &&  <Col md="12" className="form-group">
                       <label htmlFor="ollastname">{t('Your domain Name')}</label>
 
                       <InputGroup className="mb-3">
@@ -869,13 +894,12 @@ class LoginForm extends Component {
                           type="text"
                           value={webSite?.title}
                           id="ollastname"
-                          dir="rtl"
                           onChange={(e) =>
                             this.setState({webSite:{title: e.target.value}})
                           }
                         />
                       </InputGroup>
-                    </Col>
+                    </Col>}
                     {registerExtraFields && registerExtraFields.map((item) => {
                       if (item?.name == 'internationalCode') {
                         return <Col md="12" className={"form-group " + internationalCodeClass}>

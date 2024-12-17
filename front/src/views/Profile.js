@@ -5,13 +5,14 @@ import { useLocation } from 'react-router-dom';
 
 import UserDetails from '#c/components/profile/UserDetails';
 import UserAccountDetails from '#c/components/profile/UserAccountDetails';
+import MyWebsites from '#c/components/profile/MyWebsites';
 import MyOrders from '#c/components/profile/MyOrders';
 import MyTransactions from '#c/components/profile/MyTransactions';
 import MyRequests from '#c/components/profile/MyRequests';
 import MyAds from '#c/components/profile/MyAds';
 
 const Tabs = [
-  { id: 'profile', label: 'profile' },
+  { id: 'my-websites', label: 'my websites' },  { id: 'profile', label: 'profile' },
   { id: 'my-orders', label: 'my orders' },
   { id: 'transactions', label: 'transactions' },
   // { id: 'requests', label: 'requests' },
@@ -21,8 +22,8 @@ const Tabs = [
 export default function Profile() {
   const { t } = useTranslation();
   const location = useLocation();
-  let { hash = 'profile' } = location;
-  const [tab, setTab] = useState(() => hash.replace('#', '') || 'profile');
+  let { hash = 'my-websites' } = location;
+  const [tab, setTab] = useState(() => hash.replace('#', '') || 'my-websites');
 
   return (
     <Container fluid className="main-content-container px-4 py-5">
@@ -49,6 +50,10 @@ export default function Profile() {
         <Col lg="8" id={tab}>
           {tab === 'profile' && (
             <UserAccountDetails title={t('account details')} />
+          )}
+
+{tab === 'my-websites' && (
+            <MyWebsites title={t('my websites')} />
           )}
 
           {tab === 'my-orders' && <MyOrders title={t('my orders')} />}

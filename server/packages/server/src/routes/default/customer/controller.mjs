@@ -1160,7 +1160,7 @@ const self = {
             }
 
             const __dirname = path.resolve();
-            const title = req.body.title.trim(); // Ensure the title is sanitized
+            const title = req.body.title.toLowerCase().trim(); // Ensure the title is sanitized
             const sessionId = req.body.sessionId;
             const sourcePath = path.resolve(__dirname, '../source/*');
                 const destinationPath = path.resolve(`/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/`);
@@ -1216,7 +1216,7 @@ const self = {
                     const response = await axios.request(config);
                     console.log('Request successfully sent:', response.data);
                 } catch (error) {
-                    console.error('Request error:', error);
+                    console.log('Request error:', error);
                     throw new Error('Failed to send request to the external API');
                 }
             };
@@ -2337,9 +2337,9 @@ const self = {
             _id: {$ne: req.headers._id},
         };
 
-        Customer.findOne(
-            query,
-            '_id email internationalCode data',
+        Customer.findById(
+            req.headers._id,
+            '_id email internationalCode data webSite',
             function (err, respo) {
                 if (err)
                     return res.status(503).json({
@@ -2347,22 +2347,25 @@ const self = {
                         message: 'error!',
                         err: err,
                     });
+                console.log('respo', respo)
+                  console.log('respo.webSite 1', respo?.webSite)
+                    console.log('req.body.webSite ', req?.body?.webSite)
 
-                // if (respo)
-                //     console.log("respo", respo)
-                //     return res.status(400).json({
-                //         success: false,
-                //         message: 'ایمیل یا کد ملی از قبل وجود دارد!',
-                //     });
-let dat=respo?.data;
-
-let obj={
+                    console.log('(respo.webSite && req.body.webSite) ',(respo.webSite && req.body.webSite))
+                if (respo.webSite && req.body.webSite){
+                    console.log('true,,')
+                    respo.webSite.push(req.body.webSite)
+                }
+                console.log(' respo.website: ', respo.webSite)
+                let dat=respo?.data;
+                let obj={
                             ...dat,
                             ...req.body?.data
                         }
                 Customer.findByIdAndUpdate(
                     req.headers._id,
                     {
+                        webSite: respo.webSite,
                         firstName: req.body.firstName,
                         lastName: req.body.lastName,
                         email: req.body.email,

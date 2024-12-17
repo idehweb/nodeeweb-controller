@@ -2997,7 +2997,7 @@ export const submitProfile = (obj) => {
       .then((data) => {
         let mainD = data['data'];
         if (mainD.success) {
-          user = {...user, ...obj};
+          user = {...user, ...mainD.customer};
           SaveData({user: user});
         }
         resolve(mainD);

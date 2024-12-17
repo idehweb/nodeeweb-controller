@@ -24,7 +24,9 @@ export default function UserAccountDetails({ title }) {
   const registerExtraFields= store.getState().store.themeData?.registerExtraFields;
   console.log('registerExtraFields: ', registerExtraFields)
   const [state, setState] = useState({
+    newDomain:'',
     filled: false,
+    goToCreateWebsite: false,
     phoneNumber: st.phoneNumber,
     firstName: st.firstName,
     lastName: st.lastName,
@@ -93,14 +95,17 @@ export default function UserAccountDetails({ title }) {
     firstName,
     lastName,
     internationalCode,
+    goToCreateWebsite,
     webSite,
     email,
     editMode,
+    newWebsite,
     data = {},
   } = state;
 
   const { expireDate } = data;
   if (!(firstName && lastName)) return <Navigate to={'/login'} />;
+  if ((goToCreateWebsite)) return <Navigate to={`/webSiteBuilder?newDomain=${newWebsite}`} />;
   console.log('web site : ', webSite)
   return (
     <Card small className="mb-  4">
@@ -270,17 +275,17 @@ export default function UserAccountDetails({ title }) {
                   {webSite.length > 0 && (
                     <Col md="6" className="form-group">
                       <label htmlFor="feWebsite">{t('Website')}</label>
-                      <FormInput
-                        placeholder={t('Website')}
-                        value={`${webSite.title}.nodeeweb.com`}
-                        disabled
-                        onChange={(e) => {
-                          setState({
-                            ...state,
-                            webSite: { ...webSite, title: e.target.value }, // Ensure the website state structure is preserved
-                          });
-                        }}
-                      />
+                      {webSite.map((item, key) =>{
+                        return (
+                            <FormInput
+                            key= {key}
+                            placeholder={t('Website')}
+                            value={`${item.title}.nodeeweb.com`}
+                            disabled
+                          />
+                        )
+                      })}
+
                     </Col>
                   )}
 
@@ -297,10 +302,9 @@ export default function UserAccountDetails({ title }) {
 {/* Website Submission Form */}
 {state.addingWebsite && (
   <Col md="12" className="form-group">
-    <label htmlFor="newWebsite">{t('Enter Website')}</label>
     <FormInput
       id="newWebsite"
-      placeholder={t('Website')}
+      placeholder={t('Enter Domain')}
       value={state.newWebsite || ''}
       onChange={(e) => setState({ ...state, newWebsite: e.target.value })}
     />
@@ -311,17 +315,13 @@ export default function UserAccountDetails({ title }) {
         // Add new website to the list
         setState({
           ...state,
-          webSite: [
-            ...(state.webSite || []),
-            { title: state.newWebsite.trim() },
-          ],
-          newWebsite: '',
+          goToCreateWebsite: true,
           addingWebsite: false,
         });
       }}
       disabled={!state.newWebsite?.trim()}
     >
-      {t('Submit Website')}
+      {t('Submit Domain')}
     </button>
   </Col>
 )}
