@@ -100,7 +100,7 @@ export default (mongoose) => {
         const Customer = mongoose.model("Customer", CustomerSchema);
         Customer.findOne(
             {phoneNumber: phoneNumber},
-            "_id , photos , nickname , firstName , lastName, webSite , email , password , tokens  , phoneNumber , address , authCustomerWithPassword , internationalCode"
+            "_id , photos , nickname , firstName , lastName , webSite , email , password , tokens  , phoneNumber , address , authCustomerWithPassword , internationalCode"
         )
             .lean()
             .exec(function (err, user) {

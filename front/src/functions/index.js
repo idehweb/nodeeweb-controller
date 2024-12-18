@@ -2157,9 +2157,21 @@ export const yarnInstall = (title) => {
       });
   });
 };
-export const runPm2 = (title) => {
+export const addDomain = (obj) => {
   return new Promise(function (resolve, reject) {
-    postData(`${ApiUrl}/customer/runPm2`, {title}, true)
+    postData(`${ApiUrl}/customer/addDomain`, obj, true)
+      .then((data) => {
+        let mainD = data['data'];
+        resolve(mainD);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+export const runPm2 = (title, customerId) => {
+  return new Promise(function (resolve, reject) {
+    postData(`${ApiUrl}/customer/runPm2`, {title, customerId}, true)
       .then((data) => {
         let mainD = data['data'];
         resolve(mainD);

@@ -9,6 +9,7 @@ import path from "path";
 import fs, {exists, promises} from 'fs';
 import crypto from 'crypto';
 import qs from 'qs'
+import {resolve} from "@babel/core/lib/vendor/import-meta-resolve.js";
 
 const self = {
     createOne: async function (req, res, next) {
@@ -1006,7 +1007,6 @@ const self = {
     },
     setPassword: function (req, res, next) {
         let Customer = req.mongoose.model('Customer');
-
         // console.log('\n\n\n\n\n =====> try to set password:');
         console.log('before hash');
         bcrypt.hash(req.body.password, 10, function (err, hash) {
@@ -1028,10 +1028,9 @@ const self = {
             if (req.body.firstName) {
                 obj['firstName'] = req.body.firstName;
             }
-            if (!obj.webSite) {
-                obj.webSite = []; // Initialize webSite as an array if it doesn't exist
-            }
             if (req.body.webSite) {
+                obj.webSite = []; // Initialize webSite as an array if it doesn't exist
+                req.body.webSite.status = 'processing'
                 obj.webSite.push(req.body.webSite); // Push the new value into the webSite array
             }
             if (req.body.lastName) {
@@ -1728,15 +1727,18 @@ const self = {
 
     },
     runPm2: function (req, res, next) {
-        if (!req.body.title){
+        const Customer = req.mongoose.model('Customer');
+        if (!req.body.title || !req.body.customerId){
             res.json({
                 success:false,
-                message: 'there is no domain title!'
+                message: 'there is no domain title or customer session!'
             })
         }
         const __dirname = path.resolve();
         // Assuming `req.body.title` is coming from an Express.js request
         const title = req.body.title; // Make sure to sanitize this input to avoid shell injection
+        const customerId = req.body.customerId; // Make sure to sanitize this input to avoid shell injection
+        console.log('customer Id', customerId)
         const targetPath = path.resolve(__dirname, `/home/${process.env.DIRECT_ADMIN_USERNAME}/domains/${title}.${process.env.DIRECT_ADMIN_DOMAIN}/server`);
 
         // testing paths in local
@@ -1748,27 +1750,228 @@ const self = {
             return;
         }
         const command = `cd ${targetPath} && bash -c "source .env.local && pm2 start index.mjs --name ${title}"`;
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error: ${error.message}`);
+        // exec(command, (error, stdout, stderr) => {
+        //     if (error) {
+        //         console.error(`Error: ${error.message}`);
+        //         return res.json({
+        //             success: false,
+        //             message: error.message
+        //         });
+        //     }
+        //     if (stderr) {
+        //         console.error(`Stderr: ${stderr}`);
+        //         return res.json({
+        //             success:true,
+        //             message: stderr
+        //         });
+        //     }
+            Customer.findById(
+                customerId,
+                'firstName webSite',
+                function (err, customer){
+                    if (err || !customer){
+                        return res.json({
+                            success: false,
+                            message: 'customer not found!'
+                        });
+                    }
+                    _forEach(customer.webSite, (item) => {
+                        if (item.title === title){
+                            item.status = 'published'
+                        }
+                    })
+
+                        Customer.findByIdAndUpdate(
+                            customerId,
+                         {
+                             $set:{
+                                 webSite: customer.webSite
+                             }
+                         },
+                            function(er, cu){
+                                if (!cu || er){
+                                    return res.json({
+                                        success: false,
+                                        message: 'customer not found'
+                                    })
+                                }
+                                return res.json({
+                                    success: true,
+                                    message: 'pm2 started!'
+                                });
+                            }
+                        )
+                }
+            )
+        // });
+
+    },
+    addDomain: function (req, res, next) {
+        const Customer = req.mongoose.model('Customer');
+        const title = req.body.title
+        const domain = req.body.domain
+
+        if(!title || !domain){
+            return res.json ({
+                success: false,
+                message: "domain or website name isn't exist!"
+            })
+        }
+        function adminSession(){
+            return new Promise((resolve,reject ) => {
+                let adminData = JSON.stringify({
+                  "username": process.env.DIRECT_ADMIN_ADMIN_USERNAME,
+                  "password": process.env.DIRECT_ADMIN_ADMIN_PASSWORD
+                });
+                const agent = new https.Agent({
+                  rejectUnauthorized: false,
+                });
+
+                let config = {
+                  method: 'post',
+                  maxBodyLength: Infinity,
+                  url: `${process.env.DIRECT_ADMIN_URL}/api/login`,
+                  httpsAgent: agent,
+                  headers: {
+                    'accept': 'application/json',
+                    'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                    'content-type': 'application/json',
+                    'origin': process.env.DIRECT_ADMIN_URL,
+                    'priority': 'u=1, i',
+                    'referer': `${process.env.DIRECT_ADMIN_URL}/evo/login`,
+                    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'Cookie': `_clck=1ah3sxd%7C2%7Cfrn%7C0%7C1807; _clsk=a9u5q0%7C1733982399920%7C2%7C1%7Cn.clarity.ms%2Fcollect`
+                  },
+                  data : adminData
+                };
+                axios.request(config)
+                .then((response) => {
+                  console.log('sending is successfully',JSON.stringify(response.data));
+                  const resData = response.data
+                    // console.log('response json', resData)
+                    resolve({
+                        success: true,
+                        sessionInfoAdmin: resData
+                    });
+                })
+                .catch((error) => {
+                  console.log("error sending to direct admin", error);
+                    resolve({
+                        success: false,
+                        message: error.message,
+                    });
+                });
+            })
+
+        }
+        function setDomainInAdmin(domain, adminSession){
+            return new Promise((resolve) => {
+                let data = qs.stringify({
+                  username: domain,
+                  email: process.env.DIRECT_ADMIN_EMAIL,
+                  passwd: process.env.DIRECT_ADMIN_PASSWORD,
+                  passwd2: process.env.DIRECT_ADMIN_PASSWORD,
+                  domain: domain,
+                  package: process.env.DOMAIN_PACKAGE,
+                  ip: process.env.DIRECT_ADMIN_IP,
+                  notify: "yes",
+                  json: "yes",
+                  add: "yes",
+                  action: "create"
+                });
+
+
+                let config = {
+                  method: 'post',
+                  maxBodyLength: Infinity,
+                  url: `${process.env.DIRECT_ADMIN_URL}/CMD_ACCOUNT_USER?json=yes`,
+                  headers: {
+                    'accept': 'application/json',
+                    'accept-language': 'en-US,en;q=0.9,de;q=0.8,fa;q=0.7',
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'cookie': `session=${adminSession}`,
+                    'origin': process.env.DIRECT_ADMIN_URL,
+                    'priority': 'u=1, i',
+                    'referer': `${process.env.DIRECT_ADMIN_URL}/reseller/create-user`,
+                    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'x-directadmin-session-id': adminSession,
+                    'x-json': 'yes'
+                  },
+                  data : data
+                };
+
+                axios.request(config)
+                .then((response) => {
+                  console.log('sending is successfully',JSON.stringify(response.data));
+                  const resData = response.data
+                    // console.log('response json', resData)
+                    resolve({
+                        success: true,
+                        message: resData
+                    });
+                })
+                .catch((error) => {
+                  console.log("error sending to direct admin", error);
+                    resolve({
+                        success: false,
+                        message: error.message,
+                    });
+                });
+            })
+
+        }
+
+        Customer.findById(req.headers._id,'firstName webSite', async function (err, cus){
+            if( !cus || err){
                 return res.json({
                     success: false,
-                    message: error.message
-                });
-            }
-            if (stderr) {
-                console.error(`Stderr: ${stderr}`);
-                return res.json({
-                    success:true,
-                    message: stderr
-                });
-            }
-            return res.json({
-                success: true,
-                message: 'pm2 started!'
-            });
-        });
+                    message: " customer not found!"
+                })
+            } else{
+                _forEach(cus.webSite, (item)=>{
+                    if(item.title === title){
+                        item.mainDomain = domain
+                    }
+                })
+                console.log('customer webSite', cus.webSite)
 
+                const adminSessionResponse = await adminSession()
+                if(!adminSessionResponse.success){
+                    return res.json({
+                        success: false,
+                        message: adminSessionResponse.message
+                    })
+                }
+                const adminId = adminSessionResponse.sessionInfoAdmin?.sessionID
+                const setDomainAdminResponse = await setDomainInAdmin(title, adminId)
+                if(!setDomainAdminResponse.success){
+                    return res.json({
+                        success: false,
+                        message: setDomainAdminResponse.message
+                    })
+                }
+
+
+            }
+        })
+
+
+        return res.json({
+            success: true,
+            message: 'domain added successfully!'
+        })
     },
     saveToCDN: async function (req, res, next) {
         const Customer = req.mongoose.model('Customer');
@@ -2064,7 +2267,7 @@ const self = {
             if (req.body.firstName) {
                 obj['firstName'] = req.body.firstName;
             }
-            if (req.body.lastname) {
+            if (req.body.lastName) {
                 obj['lastName'] = req.body.lastName;
             }
             if (req.body.data) {
@@ -2354,6 +2557,7 @@ const self = {
                     console.log('(respo.webSite && req.body.webSite) ',(respo.webSite && req.body.webSite))
                 if (respo.webSite && req.body.webSite){
                     console.log('true,,')
+                    req.body.webSite.status = "proccessing"
                     respo.webSite.push(req.body.webSite)
                 }
                 console.log(' respo.website: ', respo.webSite)

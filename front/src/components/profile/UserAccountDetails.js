@@ -150,7 +150,7 @@ export default function UserAccountDetails({ title }) {
 
                   </Col>}
                 </Row>}
-                {(phoneNumber || webSite) && (
+                {(phoneNumber) && (
                 <Row form className="row">
                   {/* Phone Number */}
                   {phoneNumber && (

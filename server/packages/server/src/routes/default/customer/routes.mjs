@@ -38,6 +38,12 @@ export default [
     controller: controller.authCustomerForgotPass,
   },
   {
+    path: "/addDomain",
+    method: "post",
+    access: "customer_user",
+    controller: controller.addDomain,
+  },
+  {
     path: "/setPassword",
     method: "post",
     access: "customer_user",
